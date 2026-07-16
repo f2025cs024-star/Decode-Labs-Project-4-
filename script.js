@@ -1,13 +1,14 @@
 /* ========================================================
    BSCS Student Toolkit — script.js
-   Single-purpose functions · const/let only
+   Expert-level interactive logic
+   const/let only · single-purpose functions
    textContent & createElement for DOM safety
    ======================================================== */
 
 document.addEventListener('DOMContentLoaded', function initApp() {
 
   /* ======================================================
-     1. GRADE MAP (fixed lookup — never reassigned)
+     1. GRADE MAP (fixed lookup)
      ====================================================== */
   const GRADE_POINTS = {
     'A':  4.0,
@@ -23,73 +24,72 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     'F':  0.0
   };
 
+  /* GPA status thresholds */
+  const GPA_THRESHOLDS = {
+    excellent: 3.5,
+    good: 2.5,
+    warning: 2.0
+  };
+
 
   /* ======================================================
-     2. STATE
+     2. APPLICATION STATE
      ====================================================== */
-
-  // GPA calculator — array of course objects
-  let courses = [];
-  let nextCourseId = 1;
-
-  // Theme
-  let isDarkMode = false;
-
-  // Accordion — index of currently open item (null = all closed)
+  let courses        = [];
+  let nextCourseId   = 1;
+  let isDarkMode     = false;
   let openAccordionIndex = null;
 
 
   /* ======================================================
-     3. DOM REFERENCES (const — never reassigned)
+     3. DOM REFERENCES
      ====================================================== */
 
-  // GPA
+  // GPA Calculator
   const courseListEl   = document.querySelector('.js-course-list');
   const addCourseBtn   = document.querySelector('.js-add-course-btn');
   const gpaValueEl     = document.querySelector('.js-gpa-value');
   const creditTotalEl  = document.querySelector('.js-credit-total');
+  const courseCountEl   = document.querySelector('.js-course-count');
+  const gpaStatusEl    = document.querySelector('.js-gpa-status');
+  const gpaCardEl      = document.querySelector('.gpa__result-card--gpa');
 
   // Theme
   const themeToggleBtn = document.querySelector('.js-theme-toggle');
-  const themeIconEl    = document.querySelector('.js-theme-icon');
-  const themeLabelEl   = document.querySelector('.js-theme-label');
 
   // Accordion
   const accordionItems    = document.querySelectorAll('.js-accordion-item');
   const accordionTriggers = document.querySelectorAll('.js-accordion-trigger');
+
+  // Sections for scroll reveal
+  const revealElements = document.querySelectorAll('.section, .gpa__results, .accordion');
 
 
   /* ======================================================
      4. DARK MODE
      ====================================================== */
 
-  /** Read saved theme from localStorage and apply it. */
+  /** Read saved theme from localStorage and apply immediately. */
   function loadSavedTheme() {
-    const saved = localStorage.getItem('theme');
+    const saved = localStorage.getItem('bscs-toolkit-theme');
     isDarkMode = saved === 'dark';
     applyTheme();
   }
 
-  /** Apply the current isDarkMode state to the DOM. */
+  /** Sync DOM with the current isDarkMode state. */
   function applyTheme() {
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
     }
-    updateThemeToggleUI();
+    // Toggle thumb position is handled entirely by CSS via body.dark-mode
   }
 
-  /** Update the toggle button's icon and label to reflect state. */
-  function updateThemeToggleUI() {
-    themeIconEl.textContent  = isDarkMode ? '☀️' : '🌙';
-    themeLabelEl.textContent = isDarkMode ? 'Light' : 'Dark';
-  }
-
-  /** Toggle theme: flip state → persist → re-render. */
+  /** Flip theme state, persist, and re-render. */
   function toggleTheme() {
     isDarkMode = !isDarkMode;
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    localStorage.setItem('bscs-toolkit-theme', isDarkMode ? 'dark' : 'light');
     applyTheme();
   }
 
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
      5. GPA CALCULATOR
      ====================================================== */
 
-  /** Create a new course entry in state and render its row. */
+  /** Add a new blank course to state + DOM. */
   function addCourse() {
     const course = {
       id: nextCourseId++,
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     hideEmptyState();
   }
 
-  /** Remove a course from state by id, remove its DOM row, and recalculate. */
+  /** Remove a course from state + DOM and recalculate. */
   function removeCourse(courseId) {
     courses = courses.filter(function keepOthers(c) {
       return c.id !== courseId;
@@ -120,7 +120,14 @@ document.addEventListener('DOMContentLoaded', function initApp() {
 
     const rowEl = courseListEl.querySelector('[data-course-id="' + courseId + '"]');
     if (rowEl) {
-      courseListEl.removeChild(rowEl);
+      // Animate out then remove
+      rowEl.style.opacity = '0';
+      rowEl.style.transform = 'translateY(-8px) scale(0.98)';
+      setTimeout(function removeAfterAnimation() {
+        if (rowEl.parentNode) {
+          courseListEl.removeChild(rowEl);
+        }
+      }, 200);
     }
 
     recalculateGPA();
@@ -130,15 +137,18 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     }
   }
 
-  /** Build a single course row using createElement and append it. */
+  /** Build a course row with createElement and attach it. */
   function renderCourseRow(course) {
     const row = document.createElement('div');
     row.classList.add('gpa__course-row');
     row.setAttribute('role', 'listitem');
     row.setAttribute('data-course-id', course.id);
 
-    // — Course Name field
-    const nameField = createField('Course Name', 'text', 'e.g. Data Structures');
+    // Transition styles for removal animation
+    row.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+
+    // — Course Name
+    const nameField = createInputField('Course Name', 'text', 'e.g. Data Structures');
     const nameInput = nameField.querySelector('input');
     nameInput.classList.add('js-course-name');
     nameInput.value = course.name;
@@ -146,8 +156,8 @@ document.addEventListener('DOMContentLoaded', function initApp() {
       updateCourseName(course.id, nameInput.value);
     });
 
-    // — Credit Hours field
-    const creditField = createField('Credits', 'number', '3');
+    // — Credit Hours
+    const creditField = createInputField('Credits', 'number', '3');
     const creditInput = creditField.querySelector('input');
     creditInput.classList.add('js-course-credits');
     creditInput.min  = '0';
@@ -158,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
       updateCourseCredits(course.id, creditInput.value);
     });
 
-    // — Grade dropdown
+    // — Grade Dropdown
     const gradeField = createGradeField(course.grade);
     const gradeSelect = gradeField.querySelector('select');
     gradeSelect.classList.add('js-course-grade');
@@ -166,11 +176,11 @@ document.addEventListener('DOMContentLoaded', function initApp() {
       updateCourseGrade(course.id, gradeSelect.value);
     });
 
-    // — Remove button
+    // — Remove Button
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.classList.add('gpa__remove-btn');
-    removeBtn.setAttribute('aria-label', 'Remove course');
+    removeBtn.setAttribute('aria-label', 'Remove this course');
     removeBtn.textContent = '✕ Remove';
     removeBtn.addEventListener('click', function handleRemove() {
       removeCourse(course.id);
@@ -180,12 +190,11 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     row.appendChild(creditField);
     row.appendChild(gradeField);
     row.appendChild(removeBtn);
-
     courseListEl.appendChild(row);
   }
 
-  /** Helper: create a labelled text/number input field. */
-  function createField(labelText, inputType, placeholder) {
+  /** Helper: build a labelled input field. */
+  function createInputField(labelText, inputType, placeholder) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('gpa__field');
 
@@ -203,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     return wrapper;
   }
 
-  /** Helper: create a grade <select> dropdown. */
+  /** Helper: build a grade <select> dropdown. */
   function createGradeField(selectedGrade) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('gpa__field');
@@ -231,16 +240,15 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     return wrapper;
   }
 
-  /** Update a course's name in state. */
+  /** Update course name in state (no GPA recalc needed). */
   function updateCourseName(courseId, newName) {
     const course = findCourseById(courseId);
     if (course) {
       course.name = newName;
     }
-    // No GPA recalc needed for name changes
   }
 
-  /** Update a course's credit hours in state, then recalculate. */
+  /** Update credit hours in state + recalculate. */
   function updateCourseCredits(courseId, newCredits) {
     const course = findCourseById(courseId);
     if (course) {
@@ -249,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     recalculateGPA();
   }
 
-  /** Update a course's grade in state, then recalculate. */
+  /** Update grade in state + recalculate. */
   function updateCourseGrade(courseId, newGrade) {
     const course = findCourseById(courseId);
     if (course) {
@@ -258,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     recalculateGPA();
   }
 
-  /** Find a course object in state by its id. */
+  /** Lookup a course by id. */
   function findCourseById(courseId) {
     for (let i = 0; i < courses.length; i++) {
       if (courses[i].id === courseId) {
@@ -268,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     return null;
   }
 
-  /** Recalculate GPA from state and update the results display. */
+  /** Recalculate GPA from state and update result display. */
   function recalculateGPA() {
     let totalPoints  = 0;
     let totalCredits = 0;
@@ -287,14 +295,53 @@ document.addEventListener('DOMContentLoaded', function initApp() {
       ? (totalPoints / totalCredits).toFixed(2)
       : '0.00';
 
-    // Output — update only the result elements
+    // Update DOM — only the result elements
     gpaValueEl.textContent    = gpa;
     creditTotalEl.textContent = totalCredits;
+    courseCountEl.textContent  = courses.length;
+
+    // Pulse animation on value change
+    triggerPulse(gpaValueEl);
+
+    // Update GPA status badge + color state
+    updateGPAStatus(parseFloat(gpa), totalCredits);
   }
 
-  /** Show the empty-state placeholder when no courses exist. */
+  /** Apply color-coded status to the GPA card. */
+  function updateGPAStatus(gpa, totalCredits) {
+    // Clear previous state classes
+    gpaCardEl.classList.remove('is-excellent', 'is-good', 'is-warning', 'is-danger');
+
+    if (totalCredits === 0) {
+      gpaStatusEl.textContent = 'Add courses to begin';
+      return;
+    }
+
+    if (gpa >= GPA_THRESHOLDS.excellent) {
+      gpaCardEl.classList.add('is-excellent');
+      gpaStatusEl.textContent = "Dean's List ★";
+    } else if (gpa >= GPA_THRESHOLDS.good) {
+      gpaCardEl.classList.add('is-good');
+      gpaStatusEl.textContent = 'Good Standing';
+    } else if (gpa >= GPA_THRESHOLDS.warning) {
+      gpaCardEl.classList.add('is-warning');
+      gpaStatusEl.textContent = 'Needs Improvement';
+    } else {
+      gpaCardEl.classList.add('is-danger');
+      gpaStatusEl.textContent = 'Academic Probation';
+    }
+  }
+
+  /** Trigger a pulse animation on an element. */
+  function triggerPulse(element) {
+    element.classList.remove('is-pulse');
+    // Force reflow to restart animation
+    void element.offsetWidth;
+    element.classList.add('is-pulse');
+  }
+
+  /** Show the empty-state placeholder. */
   function showEmptyState() {
-    // Only add if not already present
     if (courseListEl.querySelector('.gpa__empty-state')) return;
 
     const empty = document.createElement('div');
@@ -307,10 +354,15 @@ document.addEventListener('DOMContentLoaded', function initApp() {
 
     const text = document.createElement('p');
     text.classList.add('gpa__empty-text');
-    text.textContent = 'No courses added yet. Click "Add Course" to begin!';
+    text.textContent = 'No courses added yet';
+
+    const hint = document.createElement('p');
+    hint.classList.add('gpa__empty-hint');
+    hint.textContent = 'Click "Add Course" below to start calculating your GPA';
 
     empty.appendChild(icon);
     empty.appendChild(text);
+    empty.appendChild(hint);
     courseListEl.appendChild(empty);
   }
 
@@ -327,26 +379,23 @@ document.addEventListener('DOMContentLoaded', function initApp() {
      6. FAQ ACCORDION
      ====================================================== */
 
-  /** Toggle a specific accordion item by index (accordion behavior). */
+  /** Toggle an accordion item (only one open at a time). */
   function toggleAccordionItem(clickedIndex) {
-    // If clicking the already-open item, close it
     if (openAccordionIndex === clickedIndex) {
       closeAccordionItem(clickedIndex);
       openAccordionIndex = null;
       return;
     }
 
-    // Close the previously open item (if any)
     if (openAccordionIndex !== null) {
       closeAccordionItem(openAccordionIndex);
     }
 
-    // Open the clicked item
     openAccordionItem(clickedIndex);
     openAccordionIndex = clickedIndex;
   }
 
-  /** Open a single accordion item at the given index. */
+  /** Open an accordion item at a given index. */
   function openAccordionItem(index) {
     const item    = accordionItems[index];
     const trigger = accordionTriggers[index];
@@ -357,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function initApp() {
     }
   }
 
-  /** Close a single accordion item at the given index. */
+  /** Close an accordion item at a given index. */
   function closeAccordionItem(index) {
     const item    = accordionItems[index];
     const trigger = accordionTriggers[index];
@@ -370,16 +419,47 @@ document.addEventListener('DOMContentLoaded', function initApp() {
 
 
   /* ======================================================
-     7. EVENT LISTENERS (Input step of IPO)
+     7. SCROLL-REVEAL (IntersectionObserver)
      ====================================================== */
 
-  // Dark mode toggle
+  /** Set up scroll-triggered reveal animations. */
+  function initScrollReveal() {
+    // Bail out if IntersectionObserver is not supported
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(handleRevealEntries, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    for (let i = 0; i < revealElements.length; i++) {
+      revealElements[i].classList.add('is-reveal');
+      observer.observe(revealElements[i]);
+    }
+  }
+
+  /** Callback for IntersectionObserver entries. */
+  function handleRevealEntries(entries, observer) {
+    for (let i = 0; i < entries.length; i++) {
+      if (entries[i].isIntersecting) {
+        entries[i].target.classList.add('is-visible');
+        observer.unobserve(entries[i].target);
+      }
+    }
+  }
+
+
+  /* ======================================================
+     8. EVENT LISTENERS
+     ====================================================== */
+
+  // Theme toggle
   themeToggleBtn.addEventListener('click', toggleTheme);
 
   // GPA — add course
   addCourseBtn.addEventListener('click', addCourse);
 
-  // Accordion — attach a listener to each trigger button
+  // Accordion triggers
   for (let i = 0; i < accordionTriggers.length; i++) {
     accordionTriggers[i].addEventListener('click', function handleAccordionClick() {
       toggleAccordionItem(i);
@@ -388,13 +468,16 @@ document.addEventListener('DOMContentLoaded', function initApp() {
 
 
   /* ======================================================
-     8. INITIALIZATION
+     9. INITIALIZATION
      ====================================================== */
 
-  // Apply saved theme immediately (before any paint flicker)
+  // Apply saved theme immediately
   loadSavedTheme();
 
-  // Show the empty state in GPA calculator on first load
+  // Show empty state on first load
   showEmptyState();
+
+  // Boot scroll reveal
+  initScrollReveal();
 
 });

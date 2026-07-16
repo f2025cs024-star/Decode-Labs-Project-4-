@@ -7,7 +7,7 @@
   <title>BSCS Student Toolkit — NIIT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +16,19 @@
   <header class="site-header">
     <div class="site-header__inner">
       <a href="#" class="site-header__brand">
-        <span class="site-header__logo" aria-hidden="true">🎓</span>
+        <span class="site-header__logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="url(#logo-grad)"/>
+            <path d="M8 20V10l6-4 6 4v10l-6 4-6-4z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+            <circle cx="14" cy="14" r="3" fill="#fff" opacity="0.9"/>
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28">
+                <stop stop-color="#7c5cfc"/>
+                <stop offset="1" stop-color="#ff6b6b"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
         <span class="site-header__title">BSCS Toolkit</span>
       </a>
 
@@ -27,13 +39,17 @@
         </ul>
       </nav>
 
+      <!-- Custom toggle switch for dark mode -->
       <button
         type="button"
         class="theme-toggle js-theme-toggle"
         aria-label="Toggle dark mode"
       >
-        <span class="theme-toggle__icon js-theme-icon" aria-hidden="true">🌙</span>
-        <span class="theme-toggle__label js-theme-label">Dark</span>
+        <span class="theme-toggle__track">
+          <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">☀️</span>
+          <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">🌙</span>
+          <span class="theme-toggle__thumb js-theme-thumb"></span>
+        </span>
       </button>
     </div>
   </header>
@@ -43,13 +59,29 @@
 
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-heading">
+      <!-- Animated background orbs -->
+      <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
+      <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
+      <div class="hero__orb hero__orb--3" aria-hidden="true"></div>
+
       <div class="hero__inner">
-        <h1 id="hero-heading" class="hero__heading">Your BSCS Student Toolkit</h1>
+        <span class="hero__badge">🚀 Built for NIIT Students</span>
+        <h1 id="hero-heading" class="hero__heading">
+          Your <span class="hero__heading-accent">BSCS</span> Student Toolkit
+        </h1>
         <p class="hero__subtitle">
-          Interactive utilities built for students at
+          Interactive utilities for students at
           <strong>NASTP Institute of Information Technology</strong>.
           Calculate your GPA, toggle your preferred theme, and browse common FAQs — all in one place.
         </p>
+        <div class="hero__actions">
+          <a href="#gpa-calculator" class="btn btn--primary btn--lg">
+            <span aria-hidden="true">📊</span> Calculate GPA
+          </a>
+          <a href="#faq" class="btn btn--ghost btn--lg">
+            Browse FAQ
+          </a>
+        </div>
       </div>
     </section>
 
@@ -57,11 +89,31 @@
     <section id="gpa-calculator" class="section gpa" aria-labelledby="gpa-heading">
       <div class="section__inner">
         <header class="section__header">
+          <span class="section__eyebrow">Interactive Tool</span>
           <h2 id="gpa-heading" class="section__title">GPA Calculator</h2>
           <p class="section__desc">
-            Add your courses below. Your GPA updates automatically as you type.
+            Add your courses below. Your GPA updates <em>automatically</em> as you type — no submit button needed.
           </p>
         </header>
+
+        <!-- Results panel — top position for visibility -->
+        <div class="gpa__results" aria-live="polite">
+          <div class="gpa__result-card gpa__result-card--gpa">
+            <span class="gpa__result-label">Semester GPA</span>
+            <span class="gpa__result-value js-gpa-value">0.00</span>
+            <span class="gpa__result-status js-gpa-status">Add courses to begin</span>
+          </div>
+          <div class="gpa__result-card gpa__result-card--credits">
+            <span class="gpa__result-label">Total Credit Hours</span>
+            <span class="gpa__result-value js-credit-total">0</span>
+            <span class="gpa__result-status">Across all courses</span>
+          </div>
+          <div class="gpa__result-card gpa__result-card--courses">
+            <span class="gpa__result-label">Courses</span>
+            <span class="gpa__result-value js-course-count">0</span>
+            <span class="gpa__result-status">Entries added</span>
+          </div>
+        </div>
 
         <!-- Course list (rows injected by JS) -->
         <div class="gpa__course-list js-course-list" role="list" aria-label="Course entries">
@@ -71,18 +123,6 @@
         <button type="button" class="btn btn--primary gpa__add-btn js-add-course-btn">
           <span aria-hidden="true">＋</span> Add Course
         </button>
-
-        <!-- Results panel -->
-        <div class="gpa__results" aria-live="polite">
-          <div class="gpa__result-card">
-            <span class="gpa__result-label">Semester GPA</span>
-            <span class="gpa__result-value js-gpa-value">0.00</span>
-          </div>
-          <div class="gpa__result-card">
-            <span class="gpa__result-label">Total Credit Hours</span>
-            <span class="gpa__result-value js-credit-total">0</span>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -90,6 +130,7 @@
     <section id="faq" class="section faq" aria-labelledby="faq-heading">
       <div class="section__inner">
         <header class="section__header">
+          <span class="section__eyebrow">Knowledge Base</span>
           <h2 id="faq-heading" class="section__title">Frequently Asked Questions</h2>
           <p class="section__desc">
             Common questions from BSCS students at NIIT — click any question to expand.
@@ -104,8 +145,13 @@
               class="accordion__trigger js-accordion-trigger"
               aria-expanded="false"
             >
+              <span class="accordion__number" aria-hidden="true">01</span>
               <span class="accordion__question">How is CGPA calculated?</span>
-              <span class="accordion__icon" aria-hidden="true">▸</span>
+              <span class="accordion__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </button>
             <div class="accordion__panel">
               <div class="accordion__answer">
@@ -126,8 +172,13 @@
               class="accordion__trigger js-accordion-trigger"
               aria-expanded="false"
             >
+              <span class="accordion__number" aria-hidden="true">02</span>
               <span class="accordion__question">What is the passing criteria for a course?</span>
-              <span class="accordion__icon" aria-hidden="true">▸</span>
+              <span class="accordion__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </button>
             <div class="accordion__panel">
               <div class="accordion__answer">
@@ -147,8 +198,13 @@
               class="accordion__trigger js-accordion-trigger"
               aria-expanded="false"
             >
+              <span class="accordion__number" aria-hidden="true">03</span>
               <span class="accordion__question">How do I request an official transcript?</span>
-              <span class="accordion__icon" aria-hidden="true">▸</span>
+              <span class="accordion__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </button>
             <div class="accordion__panel">
               <div class="accordion__answer">
@@ -169,8 +225,13 @@
               class="accordion__trigger js-accordion-trigger"
               aria-expanded="false"
             >
+              <span class="accordion__number" aria-hidden="true">04</span>
               <span class="accordion__question">What electives are recommended for the BSCS program?</span>
-              <span class="accordion__icon" aria-hidden="true">▸</span>
+              <span class="accordion__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </button>
             <div class="accordion__panel">
               <div class="accordion__answer">
@@ -192,8 +253,13 @@
               class="accordion__trigger js-accordion-trigger"
               aria-expanded="false"
             >
+              <span class="accordion__number" aria-hidden="true">05</span>
               <span class="accordion__question">How can I apply for a semester freeze?</span>
-              <span class="accordion__icon" aria-hidden="true">▸</span>
+              <span class="accordion__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </button>
             <div class="accordion__panel">
               <div class="accordion__answer">
@@ -215,8 +281,13 @@
               class="accordion__trigger js-accordion-trigger"
               aria-expanded="false"
             >
+              <span class="accordion__number" aria-hidden="true">06</span>
               <span class="accordion__question">What is the Final Year Project (FYP) process?</span>
-              <span class="accordion__icon" aria-hidden="true">▸</span>
+              <span class="accordion__icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
             </button>
             <div class="accordion__panel">
               <div class="accordion__answer">
@@ -240,6 +311,20 @@
   <!-- ========== FOOTER ========== -->
   <footer class="site-footer">
     <div class="site-footer__inner">
+      <div class="site-footer__brand">
+        <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="8" fill="url(#logo-grad2)"/>
+          <path d="M8 20V10l6-4 6 4v10l-6 4-6-4z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+          <circle cx="14" cy="14" r="3" fill="#fff" opacity="0.9"/>
+          <defs>
+            <linearGradient id="logo-grad2" x1="0" y1="0" x2="28" y2="28">
+              <stop stop-color="#7c5cfc"/>
+              <stop offset="1" stop-color="#ff6b6b"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>BSCS Toolkit</span>
+      </div>
       <p class="site-footer__text">
         © 2026 BSCS Student Toolkit · Built for
         <strong>NIIT — NASTP Institute of Information Technology</strong>
