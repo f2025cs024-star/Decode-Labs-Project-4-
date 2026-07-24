@@ -353,7 +353,72 @@
       </form>
     </section>
 
+    <!-- ─────────────────────────────────────────────────────────
+         SECTION 3 — Registered Elective Courses Viewer
+         ───────────────────────────────────────────────────────── -->
+    <section class="form-section form-section--records form-section--full-width" aria-labelledby="records-heading">
+      <div class="form-section__header">
+        <span class="form-section__icon" aria-hidden="true">🎓</span>
+        <h2 id="records-heading" class="form-section__title">Registered Elective Courses</h2>
+        <p class="form-section__subtitle">View, search, and manage all student course enrollments in real time.</p>
+      </div>
+
+      <!-- Controls: Search & Filter bar -->
+      <div class="records__controls">
+        <div class="records__control-group">
+          <label class="records__label" for="records-filter">Filter Course:</label>
+          <select class="form__input form__input--select records__select js-records-filter-course" id="records-filter">
+            <option value="ALL">All Elective Courses</option>
+            <option value="Artificial Intelligence">Artificial Intelligence</option>
+            <option value="Web Engineering">Web Engineering</option>
+            <option value="Mobile App Development">Mobile App Development</option>
+            <option value="Cloud Computing">Cloud Computing</option>
+            <option value="Cyber Security">Cyber Security</option>
+            <option value="Data Science">Data Science</option>
+          </select>
+        </div>
+
+        <div class="records__control-group">
+          <label class="records__label" for="records-search">Search Student:</label>
+          <input
+            class="form__input records__search js-records-search"
+            type="text"
+            id="records-search"
+            placeholder="Search by Roll # or Name..."
+          >
+        </div>
+
+        <div class="records__badge-count js-records-count" aria-live="polite">
+          Showing 0 enrollments
+        </div>
+      </div>
+
+      <!-- Live Cards Grid / Container -->
+      <div class="records__grid js-records-list" role="region" aria-live="polite" aria-label="Registered course list">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+
   </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MODAL — Course Registration Details Popup
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="modal js-modal" id="details-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title">
+    <div class="modal__overlay js-modal-overlay"></div>
+    <div class="modal__content">
+      <div class="modal__header">
+        <h3 id="modal-title" class="modal__title">Enrollment Details</h3>
+        <button type="button" class="modal__close js-modal-close" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal__body js-modal-body">
+        <!-- Dynamic content injected by JS -->
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="form__submit form__submit--modal-close js-modal-close">Close Details</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══════════════════════════════════════════════════════════
        FOOTER

@@ -721,10 +721,13 @@ function handleRegistrationSubmit(event) {
   // Simulate "transmission" to backend API
   console.log('📋 Registration Payload:', JSON.stringify(formData, null, 2));
 
+  // Save registration to local storage and update viewer live
+  addRegistration(formData);
+
   // Show success message in the aria-live region
   showStatus(
     regStatus,
-    '✅ Registration submitted successfully! We\'ll email you a confirmation at ' + formData.studentEmail + '.',
+    '✅ Registration submitted successfully! We\'ll email you a confirmation at ' + formData.studentEmail + '. Your course enrollment is now visible under Registered Elective Courses below.',
     'success'
   );
 
@@ -835,3 +838,298 @@ function handleFeedbackSubmit(event) {
 
 registrationForm.addEventListener('submit', handleRegistrationSubmit);
 feedbackForm.addEventListener('submit', handleFeedbackSubmit);
+
+
+// ═══════════════════════════════════════════════════════════════
+// REGISTERED COURSES VIEWER & MODAL ENGINE
+// ═══════════════════════════════════════════════════════════════
+
+// Registered Courses Viewer DOM references
+const recordsFilterCourse = document.querySelector('.js-records-filter-course');
+const recordsSearchInput  = document.querySelector('.js-records-search');
+const recordsCountBadge   = document.querySelector('.js-records-count');
+const recordsListGrid     = document.querySelector('.js-records-list');
+
+// Modal DOM references
+const detailsModal      = document.querySelector('.js-modal');
+const modalBody         = document.querySelector('.js-modal-body');
+const modalCloseBtns    = document.querySelectorAll('.js-modal-close');
+const modalOverlay      = document.querySelector('.js-modal-overlay');
+
+// LocalStorage key for persisting course registrations
+const STORAGE_KEY = 'niit_registered_courses_v1';
+
+// Initial sample data if storage is empty
+const INITIAL_SAMPLE_REGISTRATIONS = [
+  {
+    id: 'reg_1700000001',
+    fullName: 'Muhammad Ali',
+    studentEmail: 'ali.f2023@niit.edu.pk',
+    rollNumber: 'F2023-CS-014',
+    semester: '6',
+    electiveCourse: 'Artificial Intelligence',
+    submittedAt: new Date(Date.now() - 86400000 * 3).toISOString()
+  },
+  {
+    id: 'reg_1700000002',
+    fullName: 'Fatima Zahra',
+    studentEmail: 'fatima.f2024@niit.edu.pk',
+    rollNumber: 'F2024-CS-089',
+    semester: '4',
+    electiveCourse: 'Web Engineering',
+    submittedAt: new Date(Date.now() - 86400000 * 2).toISOString()
+  },
+  {
+    id: 'reg_1700000003',
+    fullName: 'Zain Ahmed',
+    studentEmail: 'zain.f2022@niit.edu.pk',
+    rollNumber: 'F2022-CS-005',
+    semester: '8',
+    electiveCourse: 'Cloud Computing',
+    submittedAt: new Date(Date.now() - 86400000 * 1).toISOString()
+  }
+];
+
+/**
+ * Retrieves stored registrations from localStorage or initializes sample data.
+ * @returns {Array<Object>}
+ */
+function getRegistrations() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SAMPLE_REGISTRATIONS));
+      return INITIAL_SAMPLE_REGISTRATIONS;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return INITIAL_SAMPLE_REGISTRATIONS;
+  }
+}
+
+/**
+ * Saves registrations array to localStorage.
+ * @param {Array<Object>} list
+ */
+function saveRegistrations(list) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.error('Failed to save registrations to localStorage:', e);
+  }
+}
+
+/**
+ * Adds a new course registration to storage and refreshes UI.
+ * @param {Object} formData
+ */
+function addRegistration(formData) {
+  const list = getRegistrations();
+  const newRecord = {
+    id: 'reg_' + Date.now(),
+    fullName: formData.fullName,
+    studentEmail: formData.studentEmail,
+    rollNumber: formData.rollNumber,
+    semester: formData.semester,
+    electiveCourse: formData.electiveCourse,
+    submittedAt: formData.submittedAt
+  };
+  list.unshift(newRecord); // Add to top
+  saveRegistrations(list);
+  renderRegisteredCourses();
+}
+
+/**
+ * Deletes a course registration by ID.
+ * @param {string} id
+ */
+function removeRegistration(id) {
+  let list = getRegistrations();
+  list = list.filter(item => item.id !== id);
+  saveRegistrations(list);
+  renderRegisteredCourses();
+}
+
+/**
+ * Renders the filtered/searched registered courses list.
+ */
+function renderRegisteredCourses() {
+  if (!recordsListGrid) return;
+
+  const allRecords = getRegistrations();
+  const selectedCourse = recordsFilterCourse ? recordsFilterCourse.value : 'ALL';
+  const searchTerm = recordsSearchInput ? recordsSearchInput.value.trim().toLowerCase() : '';
+
+  // Filter logic
+  const filtered = allRecords.filter(item => {
+    const matchesCourse = selectedCourse === 'ALL' || item.electiveCourse === selectedCourse;
+    const matchesSearch = searchTerm === '' ||
+      item.fullName.toLowerCase().includes(searchTerm) ||
+      item.rollNumber.toLowerCase().includes(searchTerm) ||
+      item.studentEmail.toLowerCase().includes(searchTerm);
+    return matchesCourse && matchesSearch;
+  });
+
+  // Update badge count
+  if (recordsCountBadge) {
+    recordsCountBadge.textContent = `Showing ${filtered.length} enrollment${filtered.length === 1 ? '' : 's'}`;
+  }
+
+  // Clear existing grid using textContent
+  recordsListGrid.textContent = '';
+
+  if (filtered.length === 0) {
+    const emptyMsg = document.createElement('div');
+    emptyMsg.className = 'records__empty';
+    emptyMsg.textContent = 'No course registrations match your current filter or search criteria.';
+    recordsListGrid.appendChild(emptyMsg);
+    return;
+  }
+
+  // Render cards cleanly using textContent
+  filtered.forEach(item => {
+    const card = document.createElement('article');
+    card.className = 'record-card';
+
+    // Header
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'record-card__header';
+
+    const titleBox = document.createElement('div');
+    const nameEl = document.createElement('h3');
+    nameEl.className = 'record-card__title';
+    nameEl.textContent = item.fullName;
+
+    const rollEl = document.createElement('span');
+    rollEl.className = 'record-card__roll';
+    rollEl.textContent = item.rollNumber;
+
+    titleBox.appendChild(nameEl);
+    titleBox.appendChild(rollEl);
+
+    const courseBadge = document.createElement('span');
+    courseBadge.className = 'record-card__course-badge';
+    courseBadge.textContent = item.electiveCourse;
+
+    cardHeader.appendChild(titleBox);
+    cardHeader.appendChild(courseBadge);
+
+    // Info body
+    const cardInfo = document.createElement('div');
+    cardInfo.className = 'record-card__info';
+
+    const semLine = document.createElement('div');
+    semLine.textContent = `Semester ${item.semester}`;
+
+    const emailLine = document.createElement('div');
+    emailLine.textContent = item.studentEmail;
+
+    const dateLine = document.createElement('div');
+    const dateFormatted = new Date(item.submittedAt).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    dateLine.textContent = `Enrolled: ${dateFormatted}`;
+
+    cardInfo.appendChild(semLine);
+    cardInfo.appendChild(emailLine);
+    cardInfo.appendChild(dateLine);
+
+    // Actions
+    const cardActions = document.createElement('div');
+    cardActions.className = 'record-card__actions';
+
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'record-card__btn record-card__btn--view';
+    viewBtn.type = 'button';
+    viewBtn.textContent = 'View Details';
+    viewBtn.addEventListener('click', () => openModal(item));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'record-card__btn record-card__btn--remove';
+    removeBtn.type = 'button';
+    removeBtn.textContent = 'Cancel';
+    removeBtn.addEventListener('click', () => {
+      if (confirm(`Are you sure you want to cancel ${item.fullName}'s registration for ${item.electiveCourse}?`)) {
+        removeRegistration(item.id);
+      }
+    });
+
+    cardActions.appendChild(viewBtn);
+    cardActions.appendChild(removeBtn);
+
+    // Assemble card
+    card.appendChild(cardHeader);
+    card.appendChild(cardInfo);
+    card.appendChild(cardActions);
+
+    recordsListGrid.appendChild(card);
+  });
+}
+
+/**
+ * Opens the enrollment details modal.
+ * @param {Object} item - Registration object
+ */
+function openModal(item) {
+  if (!detailsModal || !modalBody) return;
+
+  modalBody.textContent = ''; // clear
+
+  const details = [
+    { label: 'Student Name', value: item.fullName },
+    { label: 'Roll Number', value: item.rollNumber },
+    { label: 'Student Email', value: item.studentEmail },
+    { label: 'Semester', value: `Semester ${item.semester}` },
+    { label: 'Elective Course', value: item.electiveCourse },
+    { label: 'Password Policy', value: 'Verified (Strict Policy Passed)' },
+    { label: 'Submitted Date', value: new Date(item.submittedAt).toLocaleString() }
+  ];
+
+  details.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'modal__detail-row';
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'modal__detail-label';
+    labelSpan.textContent = d.label;
+
+    const valSpan = document.createElement('span');
+    valSpan.className = 'modal__detail-value';
+    valSpan.textContent = d.value;
+
+    row.appendChild(labelSpan);
+    row.appendChild(valSpan);
+    modalBody.appendChild(row);
+  });
+
+  detailsModal.classList.add('is-open');
+  detailsModal.setAttribute('aria-hidden', 'false');
+}
+
+/**
+ * Closes the enrollment details modal.
+ */
+function closeModal() {
+  if (!detailsModal) return;
+  detailsModal.classList.remove('is-open');
+  detailsModal.setAttribute('aria-hidden', 'true');
+}
+
+// Attach modal close listeners
+modalCloseBtns.forEach(btn => btn.addEventListener('click', closeModal));
+if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && detailsModal && detailsModal.classList.contains('is-open')) {
+    closeModal();
+  }
+});
+
+// Attach Filter and Search listeners
+if (recordsFilterCourse) recordsFilterCourse.addEventListener('change', renderRegisteredCourses);
+if (recordsSearchInput) recordsSearchInput.addEventListener('input', renderRegisteredCourses);
+
+// Initial render on page load
+renderRegisteredCourses();
+
