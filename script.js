@@ -1,1093 +1,746 @@
 /* ═══════════════════════════════════════════════════════════════
-   NIIT Course Registration & Feedback — script.js
-   DecodeLabs Project 4 · Enterprise Architecture & Validation Engine
-   
-   Architecture (IPO Pipeline):
-   ┌─────────┐    ┌───────────┐    ┌──────────┐
-   │  INPUT  │───▸│  PROCESS  │───▸│  OUTPUT  │
-   │  (HTML) │    │ (JS/Regex)│    │(DOM/ARIA)│
-   └─────────┘    └───────────┘    └──────────┘
-
-   Features:
-   - Password strength & entropy progress calculation
-   - Live Security & Regex Audit telemetry terminal
-   - Export to CSV & Export to JSON data suite
-   - Floating glassmorphism Toast notifications system
-   - Navigation Tab module switching
-   - Dark/Light mode theme engine with persistence
-   - Keyboard shortcuts ('/' to search)
-   - Strict adherence to const/let, textContent, ARIA standards
+   CampusForge — Universal Course Registration Portal
+   Validation Engine  |  IPO Pipeline  |  ARIA-First
    ═══════════════════════════════════════════════════════════════ */
 
-'use strict';
+(() => {
+  'use strict';
 
-// ─── DOM REFERENCES (const — immutable) ─────────────────────────
+  /* ─── DOM CACHE ───────────────────────────────────────────── */
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
 
-// Registration form elements
-const registrationForm = document.querySelector('.js-registration-form');
-const regNameInput      = document.querySelector('.js-reg-name');
-const regEmailInput     = document.querySelector('.js-reg-email');
-const regRollInput      = document.querySelector('.js-reg-roll');
-const regSemesterInput  = document.querySelector('.js-reg-semester');
-const regCourseInput    = document.querySelector('.js-reg-course');
-const regPasswordInput  = document.querySelector('.js-reg-password');
-const regConfirmInput   = document.querySelector('.js-reg-confirm-password');
-const regStatus         = document.querySelector('.js-registration-status');
+  // Registration Form
+  const regForm     = $('.js-registration-form');
+  const regName     = $('.js-reg-name');
+  const regEmail    = $('.js-reg-email');
+  const regRoll     = $('.js-reg-roll');
+  const regSemester = $('.js-reg-semester');
+  const regCourse   = $('.js-reg-course');
+  const regPassword = $('.js-reg-password');
+  const regConfirm  = $('.js-reg-confirm-password');
+  const regStatus   = $('.js-registration-status');
 
-// Password strength meter elements
-const passwordBar          = document.querySelector('.js-password-bar');
-const passwordStrengthText = document.querySelector('.js-password-strength-text');
+  // Feedback Form
+  const fbForm      = $('.js-feedback-form');
+  const fbName      = $('.js-fb-name');
+  const fbEmail     = $('.js-fb-email');
+  const fbSubject   = $('.js-fb-subject');
+  const fbMessage   = $('.js-fb-message');
+  const fbCharCount = $('.js-fb-char-count');
+  const fbStatus    = $('.js-feedback-status');
 
-// Feedback form elements
-const feedbackForm     = document.querySelector('.js-feedback-form');
-const fbNameInput      = document.querySelector('.js-fb-name');
-const fbEmailInput     = document.querySelector('.js-fb-email');
-const fbSubjectInput   = document.querySelector('.js-fb-subject');
-const fbMessageInput   = document.querySelector('.js-fb-message');
-const fbCharCount      = document.querySelector('.js-fb-char-count');
-const fbStatus         = document.querySelector('.js-feedback-status');
+  // Password checklist
+  const chkUpper   = $('.js-check-upper');
+  const chkLower   = $('.js-check-lower');
+  const chkDigit   = $('.js-check-digit');
+  const chkSpecial = $('.js-check-special');
+  const chkLength  = $('.js-check-length');
+  const pwBar      = $('.js-password-bar');
+  const pwText     = $('.js-password-strength-text');
 
-// Password checklist items
-const checkUpper   = document.querySelector('.js-check-upper');
-const checkLower   = document.querySelector('.js-check-lower');
-const checkDigit   = document.querySelector('.js-check-digit');
-const checkSpecial = document.querySelector('.js-check-special');
-const checkLength  = document.querySelector('.js-check-length');
+  // Records & Audit
+  const recordsList     = $('.js-records-list');
+  const recordsFilter   = $('.js-records-filter-course');
+  const recordsSearch   = $('.js-records-search');
+  const recordsCount    = $('.js-records-count');
+  const navRegCount     = $('.js-nav-reg-count');
+  const metricTotal     = $('.js-metric-total');
+  const btnExportCSV    = $('.js-btn-export-csv');
+  const btnExportJSON   = $('.js-btn-export-json');
+  const btnClearAll     = $('.js-btn-clear-all');
+  const auditContainer  = $('.js-audit-log-container');
+  const auditClear      = $('.js-audit-clear');
 
-// Toggle & Action elements
-const toggleButtons   = document.querySelectorAll('.js-toggle-password');
-const themeToggleBtn  = document.querySelector('.js-theme-toggle');
-const navTabs         = document.querySelectorAll('.js-nav-tab');
-const toastContainer  = document.querySelector('.js-toast-container');
-const metricTotal     = document.querySelector('.js-metric-total');
-const navRegCount     = document.querySelector('.js-nav-reg-count');
+  // Navigation
+  const navTabs         = $$('.js-nav-tab');
+  const allSections     = $$('.form-section');
 
-// Registered Courses Viewer DOM references
-const recordsFilterCourse = document.querySelector('.js-records-filter-course');
-const recordsSearchInput  = document.querySelector('.js-records-search');
-const recordsCountBadge   = document.querySelector('.js-records-count');
-const recordsListGrid     = document.querySelector('.js-records-list');
-const btnExportCSV        = document.querySelector('.js-btn-export-csv');
-const btnExportJSON       = document.querySelector('.js-btn-export-json');
-const btnClearAll         = document.querySelector('.js-btn-clear-all');
+  // Modal
+  const modal          = $('.js-modal');
+  const modalBody      = $('.js-modal-body');
+  const modalCloseAll  = $$('.js-modal-close');
+  const modalOverlay   = $('.js-modal-overlay');
 
-// Audit Console elements
-const auditLogContainer  = document.querySelector('.js-audit-log-container');
-const btnAuditClear      = document.querySelector('.js-audit-clear');
+  // Theme
+  const themeToggle    = $('.js-theme-toggle');
 
-// Modal DOM references
-const detailsModal   = document.querySelector('.js-modal');
-const modalBody      = document.querySelector('.js-modal-body');
-const modalCloseBtns = document.querySelectorAll('.js-modal-close');
-const modalOverlay   = document.querySelector('.js-modal-overlay');
-
-
-// ─── REGEX PATTERNS & CONSTANTS ───────────────────────────────
-
-const PASSWORD_REGEX = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
-const HAS_UPPERCASE = /[A-Z]/;
-const HAS_LOWERCASE = /[a-z]/;
-const HAS_DIGIT     = /[0-9]/;
-const HAS_SPECIAL   = /[#?!@$%^&*-]/;
-const MIN_LENGTH    = 8;
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ROLL_REGEX  = /^F20[0-9]{2}-CS-[0-9]{3}$/;
-const MESSAGE_MIN_LENGTH = 20;
-
-const STORAGE_KEY = 'niit_registered_courses_v1';
-const THEME_KEY   = 'niit_theme_pref';
+  // Toast
+  const toastContainer = $('.js-toast-container');
 
 
-// ─── INITIAL SAMPLE REGISTRATIONS ─────────────────────────────
-
-const INITIAL_SAMPLE_REGISTRATIONS = [
-  {
-    id: 'reg_1700000001',
-    fullName: 'Muhammad Ali',
-    studentEmail: 'ali.f2023@niit.edu.pk',
-    rollNumber: 'F2023-CS-014',
-    semester: '6',
-    electiveCourse: 'Artificial Intelligence',
-    submittedAt: new Date(Date.now() - 86400000 * 3).toISOString()
-  },
-  {
-    id: 'reg_1700000002',
-    fullName: 'Fatima Zahra',
-    studentEmail: 'fatima.f2024@niit.edu.pk',
-    rollNumber: 'F2024-CS-089',
-    semester: '4',
-    electiveCourse: 'Web Engineering',
-    submittedAt: new Date(Date.now() - 86400000 * 2).toISOString()
-  },
-  {
-    id: 'reg_1700000003',
-    fullName: 'Zain Ahmed',
-    studentEmail: 'zain.f2022@niit.edu.pk',
-    rollNumber: 'F2022-CS-005',
-    semester: '8',
-    electiveCourse: 'Cloud Computing',
-    submittedAt: new Date(Date.now() - 86400000 * 1).toISOString()
-  }
-];
-
-
-// ═══════════════════════════════════════════════════════════════
-// UTILITY ENGINE: Audit Console & Toast Notifications
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Appends a log entry to the security audit console.
- * @param {string} message 
- * @param {'info'|'success'|'warn'|'error'} level 
- */
-function logAudit(message, level = 'info') {
-  if (!auditLogContainer) return;
-  const line = document.createElement('div');
-  line.className = `audit-line audit-line--${level}`;
-  const timestamp = new Date().toLocaleTimeString();
-  line.textContent = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-  auditLogContainer.appendChild(line);
-  auditLogContainer.scrollTop = auditLogContainer.scrollHeight;
-}
-
-/**
- * Displays a floating glassmorphism toast message.
- * @param {string} message 
- * @param {'success'|'error'|'info'} type 
- */
-function showToast(message, type = 'info') {
-  if (!toastContainer) return;
-  const toast = document.createElement('div');
-  toast.className = `toast toast--${type}`;
-  
-  const iconSpan = document.createElement('span');
-  iconSpan.textContent = type === 'success' ? '✅' : type === 'error' ? '⚠' : 'ℹ';
-  
-  const textSpan = document.createElement('span');
-  textSpan.textContent = message;
-  
-  toast.appendChild(iconSpan);
-  toast.appendChild(textSpan);
-  
-  toastContainer.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// PROCESS PHASE — Validation Functions
-// ═══════════════════════════════════════════════════════════════
-
-function validateRequired(value) {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return { valid: false, message: 'This field is required.' };
-  }
-  return { valid: true, message: '' };
-}
-
-function validateEmail(value) {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return { valid: false, message: 'Email address is required.' };
-  }
-  if (!EMAIL_REGEX.test(trimmed)) {
-    return { valid: false, message: 'Please enter a valid email address (e.g. name@domain.com).' };
-  }
-  return { valid: true, message: '' };
-}
-
-function validateRollNumber(value) {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return { valid: false, message: 'Roll number is required.' };
-  }
-  if (!ROLL_REGEX.test(trimmed)) {
-    return { valid: false, message: 'Roll number must follow format F20XX-CS-XXX (e.g. F2025-CS-042).' };
-  }
-  return { valid: true, message: '' };
-}
-
-function validateSelect(value, fieldName) {
-  if (!value || value === '') {
-    return { valid: false, message: `Please select a ${fieldName}.` };
-  }
-  return { valid: true, message: '' };
-}
-
-function validatePassword(value) {
-  const rules = {
-    upper:   HAS_UPPERCASE.test(value),
-    lower:   HAS_LOWERCASE.test(value),
-    digit:   HAS_DIGIT.test(value),
-    special: HAS_SPECIAL.test(value),
-    length:  value.length >= MIN_LENGTH
+  /* ═══════════════════════════════════════════════════════════
+     VALIDATION RULES (PROCESS PHASE)
+     ═══════════════════════════════════════════════════════════ */
+  const REGEX = {
+    email:    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+    roll:     /^F20\d{2}-CS-\d{3}$/,
+    upper:    /[A-Z]/,
+    lower:    /[a-z]/,
+    digit:    /\d/,
+    special:  /[#?!@$%^&*\-]/,
   };
 
-  const failures = [];
-  if (!rules.upper)   failures.push('one uppercase letter (A–Z)');
-  if (!rules.lower)   failures.push('one lowercase letter (a–z)');
-  if (!rules.digit)   failures.push('one digit (0–9)');
-  if (!rules.special) failures.push('one special character (#?!@$%^&*-)');
-  if (!rules.length)  failures.push('at least 8 characters total');
-
-  if (value.length === 0) {
-    return { valid: false, message: 'Password is required.', rules };
+  /* ─── Single-purpose validators ──────────────────────────── */
+  function validateRequired(value) {
+    return value.trim().length > 0;
   }
 
-  const valid = PASSWORD_REGEX.test(value);
-  let message = '';
-  if (!valid) {
-    message = `Password must contain: ${failures.join(', ')}.`;
+  function validateMinLength(value, min) {
+    return value.trim().length >= min;
   }
 
-  return { valid, message, rules };
-}
+  function validateEmail(value) {
+    return REGEX.email.test(value.trim());
+  }
 
-function validateConfirmPassword(confirmValue, passwordValue) {
-  if (confirmValue.length === 0) {
-    return { valid: false, message: 'Please confirm your password.' };
+  function validateRollNumber(value) {
+    return REGEX.roll.test(value.trim());
   }
-  if (confirmValue !== passwordValue) {
-    return { valid: false, message: 'Passwords do not match. Please re-enter.' };
-  }
-  return { valid: true, message: '' };
-}
 
-function validateMessage(value) {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return { valid: false, message: 'Message is required.' };
-  }
-  if (trimmed.length < MESSAGE_MIN_LENGTH) {
-    const remaining = MESSAGE_MIN_LENGTH - trimmed.length;
+  function validatePasswordRules(value) {
     return {
-      valid: false,
-      message: `Message must be at least ${MESSAGE_MIN_LENGTH} characters. ${remaining} more character${remaining === 1 ? '' : 's'} needed.`
+      upper:   REGEX.upper.test(value),
+      lower:   REGEX.lower.test(value),
+      digit:   REGEX.digit.test(value),
+      special: REGEX.special.test(value),
+      length:  value.length >= 8,
     };
   }
-  return { valid: true, message: '' };
-}
 
-
-// ═══════════════════════════════════════════════════════════════
-// OUTPUT PHASE — DOM / ARIA Feedback Functions
-// ═══════════════════════════════════════════════════════════════
-
-function showError(inputEl, errorEl, message) {
-  inputEl.setAttribute('aria-invalid', 'true');
-  inputEl.classList.add('is-invalid');
-  inputEl.classList.remove('is-valid');
-  if (errorEl) {
-    errorEl.textContent = message;
-    errorEl.classList.add('is-visible');
+  function validatePasswordsMatch(password, confirm) {
+    return password === confirm && password.length > 0;
   }
-  inputEl.classList.remove('is-shake');
-  void inputEl.offsetWidth;
-  inputEl.classList.add('is-shake');
-}
 
-function clearError(inputEl, errorEl, markValid = false) {
-  inputEl.setAttribute('aria-invalid', 'false');
-  inputEl.classList.remove('is-invalid', 'is-shake');
-  if (errorEl) {
-    errorEl.textContent = '';
-    errorEl.classList.remove('is-visible');
+  function validateSelect(value) {
+    return value !== '' && value !== null;
   }
-  if (markValid) {
-    inputEl.classList.add('is-valid');
-  } else {
-    inputEl.classList.remove('is-valid');
+
+
+  /* ═══════════════════════════════════════════════════════════
+     OUTPUT PHASE — ARIA-First Feedback
+     ═══════════════════════════════════════════════════════════ */
+  function showError(input, errorId, message) {
+    const errorEl = document.getElementById(errorId);
+    input.classList.remove('is-valid');
+    input.classList.add('is-invalid');
+    input.setAttribute('aria-invalid', 'true');
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.classList.add('is-visible');
+    }
+    auditLog(`FAIL  ⟫ #${input.id}: "${message}"`, 'fail');
   }
-}
 
-function showStatus(statusEl, message, type) {
-  if (!statusEl) return;
-  statusEl.textContent = message;
-  statusEl.classList.remove('form__status--success', 'form__status--error');
-  statusEl.classList.add(`form__status--${type}`, 'is-visible');
-}
+  function showSuccess(input, errorId) {
+    const errorEl = document.getElementById(errorId);
+    input.classList.remove('is-invalid');
+    input.classList.add('is-valid');
+    input.removeAttribute('aria-invalid');
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.classList.remove('is-visible');
+    }
+    auditLog(`PASS  ⟫ #${input.id}: validated`, 'pass');
+  }
 
-function clearStatus(statusEl) {
-  if (!statusEl) return;
-  statusEl.textContent = '';
-  statusEl.classList.remove('form__status--success', 'form__status--error', 'is-visible');
-}
-
-function updatePasswordChecklist(rules, showErrors) {
-  const ruleMap = {
-    upper:   checkUpper,
-    lower:   checkLower,
-    digit:   checkDigit,
-    special: checkSpecial,
-    length:  checkLength
-  };
-
-  for (const [key, element] of Object.entries(ruleMap)) {
-    if (!element) continue;
-    if (rules[key]) {
-      element.classList.add('is-valid');
-      element.classList.remove('is-invalid');
-    } else if (showErrors) {
-      element.classList.add('is-invalid');
-      element.classList.remove('is-valid');
-    } else {
-      element.classList.remove('is-valid', 'is-invalid');
+  function clearFieldState(input, errorId) {
+    const errorEl = document.getElementById(errorId);
+    input.classList.remove('is-valid', 'is-invalid');
+    input.removeAttribute('aria-invalid');
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.classList.remove('is-visible');
     }
   }
 
-  // Calculate entropy score percentage for progress bar
-  let scoreCount = 0;
-  if (rules.upper) scoreCount++;
-  if (rules.lower) scoreCount++;
-  if (rules.digit) scoreCount++;
-  if (rules.special) scoreCount++;
-  if (rules.length) scoreCount++;
 
-  const pct = (scoreCount / 5) * 100;
-  if (passwordBar) {
-    passwordBar.style.width = `${pct}%`;
-    if (pct <= 40) {
-      passwordBar.style.backgroundColor = 'var(--color-error)';
-      if (passwordStrengthText) passwordStrengthText.textContent = 'Entropy Rating: Weak Password';
-    } else if (pct <= 80) {
-      passwordBar.style.backgroundColor = 'var(--color-warning)';
-      if (passwordStrengthText) passwordStrengthText.textContent = 'Entropy Rating: Moderate Strength';
-    } else {
-      passwordBar.style.backgroundColor = 'var(--color-success)';
-      if (passwordStrengthText) passwordStrengthText.textContent = 'Entropy Rating: Enterprise Grade (Bulletproof)';
+  /* ═══════════════════════════════════════════════════════════
+     FIELD-LEVEL VALIDATORS (IPO PIPELINE)
+     ═══════════════════════════════════════════════════════════ */
+
+  // -- Registration Form --
+  function validateRegName() {
+    const val = regName.value;
+    if (!validateRequired(val)) {
+      showError(regName, 'reg-name-error', 'Full name is required.');
+      return false;
     }
-  }
-}
-
-function resetPasswordChecklist() {
-  const items = [checkUpper, checkLower, checkDigit, checkSpecial, checkLength];
-  for (const item of items) {
-    if (item) item.classList.remove('is-valid', 'is-invalid');
-  }
-  if (passwordBar) passwordBar.style.width = '0%';
-  if (passwordStrengthText) passwordStrengthText.textContent = 'Entropy Rating: Unchecked';
-}
-
-function clearAllFieldStates(formEl) {
-  const inputs = formEl.querySelectorAll('.form__input');
-  const errors = formEl.querySelectorAll('.form__error');
-
-  for (const input of inputs) {
-    input.classList.remove('is-invalid', 'is-valid', 'is-shake');
-    input.setAttribute('aria-invalid', 'false');
-  }
-
-  for (const error of errors) {
-    error.textContent = '';
-    error.classList.remove('is-visible');
-  }
-}
-
-function getErrorElement(inputEl) {
-  const describedBy = inputEl.getAttribute('aria-describedby');
-  if (!describedBy) return null;
-  const ids = describedBy.split(' ');
-  for (const id of ids) {
-    if (id.endsWith('-error')) {
-      return document.getElementById(id);
+    if (!validateMinLength(val, 2)) {
+      showError(regName, 'reg-name-error', 'Name must be at least 2 characters.');
+      return false;
     }
-  }
-  return null;
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// FIELD-LEVEL BLUR HANDLERS
-// ═══════════════════════════════════════════════════════════════
-
-function handleRegNameBlur() {
-  const result = validateRequired(regNameInput.value);
-  const errorEl = getErrorElement(regNameInput);
-  if (!result.valid) {
-    showError(regNameInput, errorEl, 'Full name is required.');
-    logAudit(`Validation failed: Name empty`, 'warn');
-  } else {
-    clearError(regNameInput, errorEl, true);
-  }
-}
-
-function handleRegEmailBlur() {
-  const result = validateEmail(regEmailInput.value);
-  const errorEl = getErrorElement(regEmailInput);
-  if (!result.valid) {
-    showError(regEmailInput, errorEl, result.message);
-    logAudit(`Validation failed: Email format '${regEmailInput.value}'`, 'warn');
-  } else {
-    clearError(regEmailInput, errorEl, true);
-  }
-}
-
-function handleRegRollBlur() {
-  const result = validateRollNumber(regRollInput.value);
-  const errorEl = getErrorElement(regRollInput);
-  if (!result.valid) {
-    showError(regRollInput, errorEl, result.message);
-    logAudit(`Validation failed: Roll pattern '${regRollInput.value}'`, 'warn');
-  } else {
-    clearError(regRollInput, errorEl, true);
-  }
-}
-
-function handleRegSemesterBlur() {
-  const result = validateSelect(regSemesterInput.value, 'semester');
-  const errorEl = getErrorElement(regSemesterInput);
-  if (!result.valid) {
-    showError(regSemesterInput, errorEl, result.message);
-  } else {
-    clearError(regSemesterInput, errorEl, true);
-  }
-}
-
-function handleRegCourseBlur() {
-  const result = validateSelect(regCourseInput.value, 'course');
-  const errorEl = getErrorElement(regCourseInput);
-  if (!result.valid) {
-    showError(regCourseInput, errorEl, result.message);
-  } else {
-    clearError(regCourseInput, errorEl, true);
-  }
-}
-
-function handleRegPasswordBlur() {
-  const result = validatePassword(regPasswordInput.value);
-  const errorEl = getErrorElement(regPasswordInput);
-  updatePasswordChecklist(result.rules, true);
-
-  if (!result.valid) {
-    showError(regPasswordInput, errorEl, result.message);
-    logAudit(`Password regex scanner rejected input`, 'warn');
-  } else {
-    clearError(regPasswordInput, errorEl, true);
-    logAudit(`Password regex policy passed 100%`, 'success');
+    showSuccess(regName, 'reg-name-error');
+    return true;
   }
 
-  if (regConfirmInput.value.length > 0) {
-    handleRegConfirmBlur();
+  function validateRegEmail() {
+    const val = regEmail.value;
+    if (!validateRequired(val)) {
+      showError(regEmail, 'reg-email-error', 'Student email is required.');
+      return false;
+    }
+    if (!validateEmail(val)) {
+      showError(regEmail, 'reg-email-error', 'Enter a valid email address.');
+      return false;
+    }
+    showSuccess(regEmail, 'reg-email-error');
+    return true;
   }
-}
 
-function handleRegConfirmBlur() {
-  const result = validateConfirmPassword(regConfirmInput.value, regPasswordInput.value);
-  const errorEl = getErrorElement(regConfirmInput);
-  if (!result.valid) {
-    showError(regConfirmInput, errorEl, result.message);
-    logAudit(`Cross-field Password match failed`, 'warn');
-  } else {
-    clearError(regConfirmInput, errorEl, true);
+  function validateRegRoll() {
+    const val = regRoll.value;
+    if (!validateRequired(val)) {
+      showError(regRoll, 'reg-roll-error', 'Roll number is required.');
+      return false;
+    }
+    if (!validateRollNumber(val)) {
+      showError(regRoll, 'reg-roll-error', 'Format: F20XX-CS-XXX (e.g. F2025-CS-042).');
+      return false;
+    }
+    showSuccess(regRoll, 'reg-roll-error');
+    return true;
   }
-}
 
-function handleFbNameBlur() {
-  const result = validateRequired(fbNameInput.value);
-  const errorEl = getErrorElement(fbNameInput);
-  if (!result.valid) showError(fbNameInput, errorEl, 'Name is required.');
-  else clearError(fbNameInput, errorEl, true);
-}
+  function validateRegSemester() {
+    if (!validateSelect(regSemester.value)) {
+      showError(regSemester, 'reg-semester-error', 'Please select your semester.');
+      return false;
+    }
+    showSuccess(regSemester, 'reg-semester-error');
+    return true;
+  }
 
-function handleFbEmailBlur() {
-  const result = validateEmail(fbEmailInput.value);
-  const errorEl = getErrorElement(fbEmailInput);
-  if (!result.valid) showError(fbEmailInput, errorEl, result.message);
-  else clearError(fbEmailInput, errorEl, true);
-}
+  function validateRegCourse() {
+    if (!validateSelect(regCourse.value)) {
+      showError(regCourse, 'reg-course-error', 'Please choose an elective course.');
+      return false;
+    }
+    showSuccess(regCourse, 'reg-course-error');
+    return true;
+  }
 
-function handleFbSubjectBlur() {
-  const result = validateRequired(fbSubjectInput.value);
-  const errorEl = getErrorElement(fbSubjectInput);
-  if (!result.valid) showError(fbSubjectInput, errorEl, 'Subject is required.');
-  else clearError(fbSubjectInput, errorEl, true);
-}
+  function validateRegPassword() {
+    const val = regPassword.value;
+    const rules = validatePasswordRules(val);
 
-function handleFbMessageBlur() {
-  const result = validateMessage(fbMessageInput.value);
-  const errorEl = getErrorElement(fbMessageInput);
-  if (!result.valid) showError(fbMessageInput, errorEl, result.message);
-  else clearError(fbMessageInput, errorEl, true);
-}
+    // Update checklist
+    chkUpper.classList.toggle('is-met', rules.upper);
+    chkLower.classList.toggle('is-met', rules.lower);
+    chkDigit.classList.toggle('is-met', rules.digit);
+    chkSpecial.classList.toggle('is-met', rules.special);
+    chkLength.classList.toggle('is-met', rules.length);
+
+    // Strength bar
+    const met = Object.values(rules).filter(Boolean).length;
+    const pct = (met / 5) * 100;
+    pwBar.style.width = `${pct}%`;
+
+    const labels = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+    pwText.textContent = `Strength: ${val.length === 0 ? 'Not evaluated' : labels[met - 1] || 'Very Weak'}`;
+
+    if (!validateRequired(val)) {
+      showError(regPassword, 'reg-password-error', 'Password is required.');
+      return false;
+    }
+
+    const allMet = Object.values(rules).every(Boolean);
+    if (!allMet) {
+      showError(regPassword, 'reg-password-error', 'Password must meet all requirements above.');
+      return false;
+    }
+    showSuccess(regPassword, 'reg-password-error');
+    return true;
+  }
+
+  function validateRegConfirm() {
+    const val = regConfirm.value;
+    if (!validateRequired(val)) {
+      showError(regConfirm, 'reg-confirm-password-error', 'Please confirm your password.');
+      return false;
+    }
+    if (!validatePasswordsMatch(regPassword.value, val)) {
+      showError(regConfirm, 'reg-confirm-password-error', 'Passwords do not match.');
+      return false;
+    }
+    showSuccess(regConfirm, 'reg-confirm-password-error');
+    return true;
+  }
+
+  // -- Feedback Form --
+  function validateFbName() {
+    if (!validateRequired(fbName.value)) {
+      showError(fbName, 'fb-name-error', 'Name is required.');
+      return false;
+    }
+    showSuccess(fbName, 'fb-name-error');
+    return true;
+  }
+
+  function validateFbEmail() {
+    const val = fbEmail.value;
+    if (!validateRequired(val)) {
+      showError(fbEmail, 'fb-email-error', 'Email is required.');
+      return false;
+    }
+    if (!validateEmail(val)) {
+      showError(fbEmail, 'fb-email-error', 'Enter a valid email address.');
+      return false;
+    }
+    showSuccess(fbEmail, 'fb-email-error');
+    return true;
+  }
+
+  function validateFbSubject() {
+    if (!validateRequired(fbSubject.value)) {
+      showError(fbSubject, 'fb-subject-error', 'Subject is required.');
+      return false;
+    }
+    showSuccess(fbSubject, 'fb-subject-error');
+    return true;
+  }
+
+  function validateFbMessage() {
+    const val = fbMessage.value;
+    if (!validateRequired(val)) {
+      showError(fbMessage, 'fb-message-error', 'Message is required.');
+      return false;
+    }
+    if (!validateMinLength(val, 20)) {
+      showError(fbMessage, 'fb-message-error', `Need at least 20 characters (currently ${val.trim().length}).`);
+      return false;
+    }
+    showSuccess(fbMessage, 'fb-message-error');
+    return true;
+  }
 
 
-// ═══════════════════════════════════════════════════════════════
-// EVENT LISTENERS — Field Events
-// ═══════════════════════════════════════════════════════════════
-
-regNameInput.addEventListener('blur', handleRegNameBlur);
-regEmailInput.addEventListener('blur', handleRegEmailBlur);
-regRollInput.addEventListener('blur', handleRegRollBlur);
-regSemesterInput.addEventListener('blur', handleRegSemesterBlur);
-regSemesterInput.addEventListener('change', handleRegSemesterBlur);
-regCourseInput.addEventListener('blur', handleRegCourseBlur);
-regCourseInput.addEventListener('change', handleRegCourseBlur);
-regPasswordInput.addEventListener('blur', handleRegPasswordBlur);
-regConfirmInput.addEventListener('blur', handleRegConfirmBlur);
-
-fbNameInput.addEventListener('blur', handleFbNameBlur);
-fbEmailInput.addEventListener('blur', handleFbEmailBlur);
-fbSubjectInput.addEventListener('blur', handleFbSubjectBlur);
-fbMessageInput.addEventListener('blur', handleFbMessageBlur);
-
-regPasswordInput.addEventListener('input', function () {
-  const result = validatePassword(regPasswordInput.value);
-  updatePasswordChecklist(result.rules, false);
-});
-
-fbMessageInput.addEventListener('input', function () {
-  const currentLength = fbMessageInput.value.trim().length;
-  fbCharCount.textContent = currentLength;
-});
-
-for (const btn of toggleButtons) {
-  btn.addEventListener('click', function () {
-    const targetId = btn.getAttribute('data-target');
-    const targetInput = document.getElementById(targetId);
-    if (!targetInput) return;
-
-    const isPassword = targetInput.type === 'password';
-    targetInput.type = isPassword ? 'text' : 'password';
-
-    const icon = btn.querySelector('.form__eye-icon');
-    if (icon) icon.textContent = isPassword ? '🙈' : '👁';
-
-    btn.setAttribute(
-      'aria-label',
-      isPassword ? 'Hide password' : 'Show password'
-    );
+  /* ═══════════════════════════════════════════════════════════
+     EVENT LISTENERS — Blur/Change Validation
+     ═══════════════════════════════════════════════════════════ */
+  regName.addEventListener('blur', validateRegName);
+  regEmail.addEventListener('blur', validateRegEmail);
+  regRoll.addEventListener('blur', validateRegRoll);
+  regSemester.addEventListener('blur', validateRegSemester);
+  regSemester.addEventListener('change', validateRegSemester);
+  regCourse.addEventListener('blur', validateRegCourse);
+  regCourse.addEventListener('change', validateRegCourse);
+  regPassword.addEventListener('blur', validateRegPassword);
+  regPassword.addEventListener('input', () => {
+    // Live checklist update
+    const rules = validatePasswordRules(regPassword.value);
+    chkUpper.classList.toggle('is-met', rules.upper);
+    chkLower.classList.toggle('is-met', rules.lower);
+    chkDigit.classList.toggle('is-met', rules.digit);
+    chkSpecial.classList.toggle('is-met', rules.special);
+    chkLength.classList.toggle('is-met', rules.length);
+    const met = Object.values(rules).filter(Boolean).length;
+    pwBar.style.width = `${(met / 5) * 100}%`;
+    const labels = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+    pwText.textContent = `Strength: ${regPassword.value.length === 0 ? 'Not evaluated' : labels[met - 1] || 'Very Weak'}`;
   });
-}
+  regConfirm.addEventListener('blur', validateRegConfirm);
 
-
-// ═══════════════════════════════════════════════════════════════
-// SUBMIT HANDLERS — IPO Pipeline Execution
-// ═══════════════════════════════════════════════════════════════
-
-function handleRegistrationSubmit(event) {
-  // ★ PREVENT THE DEFAULT REFRESH — line 1 requirement
-  event.preventDefault();
-
-  clearStatus(regStatus);
-  let isFormValid = true;
-
-  const nameResult = validateRequired(regNameInput.value);
-  const nameError = getErrorElement(regNameInput);
-  if (!nameResult.valid) { showError(regNameInput, nameError, 'Full name is required.'); isFormValid = false; }
-  else { clearError(regNameInput, nameError, true); }
-
-  const emailResult = validateEmail(regEmailInput.value);
-  const emailError = getErrorElement(regEmailInput);
-  if (!emailResult.valid) { showError(regEmailInput, emailError, emailResult.message); isFormValid = false; }
-  else { clearError(regEmailInput, emailError, true); }
-
-  const rollResult = validateRollNumber(regRollInput.value);
-  const rollError = getErrorElement(regRollInput);
-  if (!rollResult.valid) { showError(regRollInput, rollError, rollResult.message); isFormValid = false; }
-  else { clearError(regRollInput, rollError, true); }
-
-  const semesterResult = validateSelect(regSemesterInput.value, 'semester');
-  const semesterError = getErrorElement(regSemesterInput);
-  if (!semesterResult.valid) { showError(regSemesterInput, semesterError, semesterResult.message); isFormValid = false; }
-  else { clearError(regSemesterInput, semesterError, true); }
-
-  const courseResult = validateSelect(regCourseInput.value, 'course');
-  const courseError = getErrorElement(regCourseInput);
-  if (!courseResult.valid) { showError(regCourseInput, courseError, courseResult.message); isFormValid = false; }
-  else { clearError(regCourseInput, courseError, true); }
-
-  const passwordResult = validatePassword(regPasswordInput.value);
-  const passwordError = getErrorElement(regPasswordInput);
-  updatePasswordChecklist(passwordResult.rules, true);
-  if (!passwordResult.valid) { showError(regPasswordInput, passwordError, passwordResult.message); isFormValid = false; }
-  else { clearError(regPasswordInput, passwordError, true); }
-
-  const confirmResult = validateConfirmPassword(regConfirmInput.value, regPasswordInput.value);
-  const confirmError = getErrorElement(regConfirmInput);
-  if (!confirmResult.valid) { showError(regConfirmInput, confirmError, confirmResult.message); isFormValid = false; }
-  else { clearError(regConfirmInput, confirmError, true); }
-
-  if (!isFormValid) {
-    const firstInvalid = registrationForm.querySelector('.is-invalid');
-    if (firstInvalid) firstInvalid.focus();
-
-    showStatus(regStatus, 'Please fix the errors above before submitting.', 'error');
-    showToast('Registration form contains validation errors.', 'error');
-    logAudit('Submit rejected: Form payload contains invalid fields', 'error');
-    return;
-  }
-
-  const formData = {
-    fullName: regNameInput.value.trim(),
-    studentEmail: regEmailInput.value.trim(),
-    rollNumber: regRollInput.value.trim(),
-    semester: regSemesterInput.value,
-    electiveCourse: regCourseInput.value,
-    passwordHash: '[REDACTED — SHA-256 salted server-side]',
-    submittedAt: new Date().toISOString()
-  };
-
-  console.log('📋 Registration Payload:', JSON.stringify(formData, null, 2));
-
-  addRegistration(formData);
-
-  showStatus(
-    regStatus,
-    '✅ Registration submitted successfully! We\'ll email you a confirmation at ' + formData.studentEmail + '. Enrollment added to registry.',
-    'success'
-  );
-
-  showToast(`Enrolled ${formData.fullName} in ${formData.electiveCourse}!`, 'success');
-  logAudit(`Registration payload transmitted for ${formData.rollNumber}`, 'success');
-
-  registrationForm.reset();
-  clearAllFieldStates(registrationForm);
-  resetPasswordChecklist();
-}
-
-function handleFeedbackSubmit(event) {
-  // ★ PREVENT THE DEFAULT REFRESH — line 1 requirement
-  event.preventDefault();
-
-  clearStatus(fbStatus);
-  let isFormValid = true;
-
-  const nameResult = validateRequired(fbNameInput.value);
-  const nameError = getErrorElement(fbNameInput);
-  if (!nameResult.valid) { showError(fbNameInput, nameError, 'Name is required.'); isFormValid = false; }
-  else { clearError(fbNameInput, nameError, true); }
-
-  const emailResult = validateEmail(fbEmailInput.value);
-  const emailError = getErrorElement(fbEmailInput);
-  if (!emailResult.valid) { showError(fbEmailInput, emailError, emailResult.message); isFormValid = false; }
-  else { clearError(fbEmailInput, emailError, true); }
-
-  const subjectResult = validateRequired(fbSubjectInput.value);
-  const subjectError = getErrorElement(fbSubjectInput);
-  if (!subjectResult.valid) { showError(fbSubjectInput, subjectError, 'Subject is required.'); isFormValid = false; }
-  else { clearError(fbSubjectInput, subjectError, true); }
-
-  const messageResult = validateMessage(fbMessageInput.value);
-  const messageError = getErrorElement(fbMessageInput);
-  if (!messageResult.valid) { showError(fbMessageInput, messageError, messageResult.message); isFormValid = false; }
-  else { clearError(fbMessageInput, messageError, true); }
-
-  if (!isFormValid) {
-    const firstInvalid = feedbackForm.querySelector('.is-invalid');
-    if (firstInvalid) firstInvalid.focus();
-
-    showStatus(fbStatus, 'Please fix the errors above before submitting.', 'error');
-    showToast('Feedback form contains validation errors.', 'error');
-    return;
-  }
-
-  const formData = {
-    name: fbNameInput.value.trim(),
-    email: fbEmailInput.value.trim(),
-    subject: fbSubjectInput.value.trim(),
-    message: fbMessageInput.value.trim(),
-    submittedAt: new Date().toISOString()
-  };
-
-  console.log('💬 Feedback Payload:', JSON.stringify(formData, null, 2));
-
-  showStatus(
-    fbStatus,
-    '✅ Feedback submitted successfully! Thank you — we\'ll respond to ' + formData.email + ' within 24 hours.',
-    'success'
-  );
-
-  showToast('Feedback submitted successfully!', 'success');
-  logAudit(`Feedback ticket generated for ${formData.email}`, 'success');
-
-  feedbackForm.reset();
-  clearAllFieldStates(feedbackForm);
-  fbCharCount.textContent = '0';
-}
-
-registrationForm.addEventListener('submit', handleRegistrationSubmit);
-feedbackForm.addEventListener('submit', handleFeedbackSubmit);
-
-
-// ═══════════════════════════════════════════════════════════════
-// REGISTERED COURSES VIEWER & DATA EXPORT ENGINE
-// ═══════════════════════════════════════════════════════════════
-
-function getRegistrations() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SAMPLE_REGISTRATIONS));
-      return INITIAL_SAMPLE_REGISTRATIONS;
-    }
-    return JSON.parse(raw);
-  } catch (e) {
-    return INITIAL_SAMPLE_REGISTRATIONS;
-  }
-}
-
-function saveRegistrations(list) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    updateMetrics();
-  } catch (e) {
-    console.error('Failed to save registrations to localStorage:', e);
-  }
-}
-
-function addRegistration(formData) {
-  const list = getRegistrations();
-  const newRecord = {
-    id: 'reg_' + Date.now(),
-    fullName: formData.fullName,
-    studentEmail: formData.studentEmail,
-    rollNumber: formData.rollNumber,
-    semester: formData.semester,
-    electiveCourse: formData.electiveCourse,
-    submittedAt: formData.submittedAt
-  };
-  list.unshift(newRecord);
-  saveRegistrations(list);
-  renderRegisteredCourses();
-}
-
-function removeRegistration(id) {
-  let list = getRegistrations();
-  list = list.filter(item => item.id !== id);
-  saveRegistrations(list);
-  renderRegisteredCourses();
-  showToast('Enrollment removed from registry.', 'info');
-  logAudit(`Record ${id} removed from storage`, 'warn');
-}
-
-function renderRegisteredCourses() {
-  if (!recordsListGrid) return;
-
-  const allRecords = getRegistrations();
-  const selectedCourse = recordsFilterCourse ? recordsFilterCourse.value : 'ALL';
-  const searchTerm = recordsSearchInput ? recordsSearchInput.value.trim().toLowerCase() : '';
-
-  const filtered = allRecords.filter(item => {
-    const matchesCourse = selectedCourse === 'ALL' || item.electiveCourse === selectedCourse;
-    const matchesSearch = searchTerm === '' ||
-      item.fullName.toLowerCase().includes(searchTerm) ||
-      item.rollNumber.toLowerCase().includes(searchTerm) ||
-      item.studentEmail.toLowerCase().includes(searchTerm);
-    return matchesCourse && matchesSearch;
+  fbName.addEventListener('blur', validateFbName);
+  fbEmail.addEventListener('blur', validateFbEmail);
+  fbSubject.addEventListener('blur', validateFbSubject);
+  fbMessage.addEventListener('blur', validateFbMessage);
+  fbMessage.addEventListener('input', () => {
+    fbCharCount.textContent = fbMessage.value.trim().length;
   });
 
-  if (recordsCountBadge) {
-    recordsCountBadge.textContent = `Showing ${filtered.length} enrollment${filtered.length === 1 ? '' : 's'}`;
+
+  /* ═══════════════════════════════════════════════════════════
+     FORM SUBMISSIONS
+     ═══════════════════════════════════════════════════════════ */
+  regForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    auditLog('─── REGISTRATION SUBMIT TRIGGERED ───', 'info');
+
+    const results = [
+      validateRegName(),
+      validateRegEmail(),
+      validateRegRoll(),
+      validateRegSemester(),
+      validateRegCourse(),
+      validateRegPassword(),
+      validateRegConfirm(),
+    ];
+
+    const allValid = results.every(Boolean);
+
+    if (allValid) {
+      const entry = {
+        id: Date.now(),
+        name: regName.value.trim(),
+        email: regEmail.value.trim(),
+        roll: regRoll.value.trim(),
+        semester: regSemester.value,
+        course: regCourse.value,
+        timestamp: new Date().toISOString(),
+      };
+
+      saveRegistration(entry);
+      regForm.reset();
+
+      // Reset checklist
+      [chkUpper, chkLower, chkDigit, chkSpecial, chkLength].forEach(el => el.classList.remove('is-met'));
+      pwBar.style.width = '0%';
+      pwText.textContent = 'Strength: Not evaluated';
+
+      // Clear all field states
+      [regName, regEmail, regRoll, regSemester, regCourse, regPassword, regConfirm].forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+        input.removeAttribute('aria-invalid');
+      });
+
+      regStatus.textContent = '✅ Registration submitted successfully!';
+      regStatus.style.color = 'var(--color-success)';
+      showToast('Registration submitted successfully!', 'success');
+      auditLog('SUBMIT ⟫ Registration ACCEPTED — all 7 fields passed', 'pass');
+
+      setTimeout(() => { regStatus.textContent = ''; }, 5000);
+    } else {
+      regStatus.textContent = '⚠ Please fix the errors above before submitting.';
+      regStatus.style.color = 'var(--color-danger)';
+      showToast('Validation failed — check highlighted fields', 'error');
+      auditLog('SUBMIT ⟫ Registration REJECTED — validation failures detected', 'fail');
+
+      // Focus first invalid
+      const firstInvalid = regForm.querySelector('.is-invalid');
+      if (firstInvalid) firstInvalid.focus();
+
+      setTimeout(() => { regStatus.textContent = ''; }, 5000);
+    }
+  });
+
+  fbForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    auditLog('─── FEEDBACK SUBMIT TRIGGERED ───', 'info');
+
+    const results = [
+      validateFbName(),
+      validateFbEmail(),
+      validateFbSubject(),
+      validateFbMessage(),
+    ];
+
+    const allValid = results.every(Boolean);
+
+    if (allValid) {
+      fbForm.reset();
+      fbCharCount.textContent = '0';
+
+      [fbName, fbEmail, fbSubject, fbMessage].forEach(input => {
+        input.classList.remove('is-valid', 'is-invalid');
+        input.removeAttribute('aria-invalid');
+      });
+
+      fbStatus.textContent = '✅ Feedback sent successfully! Thank you.';
+      fbStatus.style.color = 'var(--color-success)';
+      showToast('Feedback submitted — thank you!', 'success');
+      auditLog('SUBMIT ⟫ Feedback ACCEPTED — all 4 fields passed', 'pass');
+
+      setTimeout(() => { fbStatus.textContent = ''; }, 5000);
+    } else {
+      fbStatus.textContent = '⚠ Please fix the errors above.';
+      fbStatus.style.color = 'var(--color-danger)';
+      showToast('Feedback validation failed', 'error');
+      auditLog('SUBMIT ⟫ Feedback REJECTED — validation failures detected', 'fail');
+
+      const firstInvalid = fbForm.querySelector('.is-invalid');
+      if (firstInvalid) firstInvalid.focus();
+
+      setTimeout(() => { fbStatus.textContent = ''; }, 5000);
+    }
+  });
+
+
+  /* ═══════════════════════════════════════════════════════════
+     DATA PERSISTENCE (localStorage)
+     ═══════════════════════════════════════════════════════════ */
+  const STORAGE_KEY = 'campusforge_registrations';
+
+  function getRegistrations() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch {
+      return [];
+    }
   }
 
-  recordsListGrid.textContent = '';
-
-  if (filtered.length === 0) {
-    const emptyMsg = document.createElement('div');
-    emptyMsg.className = 'records__empty';
-    emptyMsg.textContent = 'No course registrations match your current filter or search criteria.';
-    recordsListGrid.appendChild(emptyMsg);
-    return;
+  function saveRegistration(entry) {
+    const data = getRegistrations();
+    data.push(entry);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    renderRecords();
   }
 
-  filtered.forEach(item => {
-    const card = document.createElement('article');
-    card.className = 'record-card';
+  function deleteRegistration(id) {
+    const data = getRegistrations().filter(r => r.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    renderRecords();
+    showToast('Record deleted', 'info');
+  }
 
-    const cardHeader = document.createElement('div');
-    cardHeader.className = 'record-card__header';
 
-    const titleBox = document.createElement('div');
-    const nameEl = document.createElement('h3');
-    nameEl.className = 'record-card__title';
-    nameEl.textContent = item.fullName;
+  /* ═══════════════════════════════════════════════════════════
+     RECORDS RENDERING
+     ═══════════════════════════════════════════════════════════ */
+  function renderRecords() {
+    const data = getRegistrations();
+    const filterVal = recordsFilter.value;
+    const searchVal = recordsSearch.value.trim().toLowerCase();
 
-    const rollEl = document.createElement('span');
-    rollEl.className = 'record-card__roll';
-    rollEl.textContent = item.rollNumber;
+    let filtered = data;
 
-    titleBox.appendChild(nameEl);
-    titleBox.appendChild(rollEl);
+    if (filterVal !== 'ALL') {
+      filtered = filtered.filter(r => r.course === filterVal);
+    }
 
-    const courseBadge = document.createElement('span');
-    courseBadge.className = 'record-card__course-badge';
-    courseBadge.textContent = item.electiveCourse;
+    if (searchVal) {
+      filtered = filtered.filter(r =>
+        r.name.toLowerCase().includes(searchVal) ||
+        r.roll.toLowerCase().includes(searchVal) ||
+        r.email.toLowerCase().includes(searchVal)
+      );
+    }
 
-    cardHeader.appendChild(titleBox);
-    cardHeader.appendChild(courseBadge);
+    recordsCount.textContent = `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`;
+    navRegCount.textContent = data.length;
+    metricTotal.textContent = data.length;
 
-    const cardInfo = document.createElement('div');
-    cardInfo.className = 'record-card__info';
+    if (filtered.length === 0) {
+      recordsList.innerHTML = '<div class="records__empty">No enrollment records found. Submit a registration to see data here.</div>';
+      return;
+    }
 
-    const semLine = document.createElement('div');
-    semLine.textContent = `Semester ${item.semester}`;
+    recordsList.innerHTML = filtered.map(r => `
+      <div class="record-card" data-id="${r.id}" tabindex="0" role="button" aria-label="View details for ${r.name}">
+        <div class="record-card__name">${escapeHTML(r.name)}</div>
+        <div class="record-card__roll">${escapeHTML(r.roll)}</div>
+        <div class="record-card__course">${escapeHTML(r.course)}</div>
+        <div class="record-card__email">${escapeHTML(r.email)}</div>
+      </div>
+    `).join('');
 
-    const emailLine = document.createElement('div');
-    emailLine.textContent = item.studentEmail;
-
-    const dateLine = document.createElement('div');
-    const dateFormatted = new Date(item.submittedAt).toLocaleDateString(undefined, {
-      month: 'short', day: 'numeric', year: 'numeric'
+    // Card click → modal
+    recordsList.querySelectorAll('.record-card').forEach(card => {
+      const handler = () => {
+        const id = Number(card.dataset.id);
+        const record = data.find(r => r.id === id);
+        if (record) openModal(record);
+      };
+      card.addEventListener('click', handler);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handler();
+        }
+      });
     });
-    dateLine.textContent = `Enrolled: ${dateFormatted}`;
+  }
 
-    cardInfo.appendChild(semLine);
-    cardInfo.appendChild(emailLine);
-    cardInfo.appendChild(dateLine);
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
-    const cardActions = document.createElement('div');
-    cardActions.className = 'record-card__actions';
+  recordsFilter.addEventListener('change', renderRecords);
+  recordsSearch.addEventListener('input', renderRecords);
 
-    const viewBtn = document.createElement('button');
-    viewBtn.className = 'record-card__btn record-card__btn--view';
-    viewBtn.type = 'button';
-    viewBtn.textContent = 'View Details';
-    viewBtn.addEventListener('click', () => openModal(item));
+  // Keyboard shortcut: / to focus search
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      recordsSearch.focus();
+    }
+  });
 
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'record-card__btn record-card__btn--remove';
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'Cancel';
-    removeBtn.addEventListener('click', () => {
-      if (confirm(`Are you sure you want to cancel ${item.fullName}'s registration for ${item.electiveCourse}?`)) {
-        removeRegistration(item.id);
+
+  /* ═══════════════════════════════════════════════════════════
+     MODAL
+     ═══════════════════════════════════════════════════════════ */
+  function openModal(record) {
+    modalBody.innerHTML = `
+      <div class="detail-row"><span class="detail-key">Full Name</span><span class="detail-value">${escapeHTML(record.name)}</span></div>
+      <div class="detail-row"><span class="detail-key">Email</span><span class="detail-value">${escapeHTML(record.email)}</span></div>
+      <div class="detail-row"><span class="detail-key">Roll Number</span><span class="detail-value">${escapeHTML(record.roll)}</span></div>
+      <div class="detail-row"><span class="detail-key">Semester</span><span class="detail-value">${record.semester}</span></div>
+      <div class="detail-row"><span class="detail-key">Elective</span><span class="detail-value">${escapeHTML(record.course)}</span></div>
+      <div class="detail-row"><span class="detail-key">Registered</span><span class="detail-value">${new Date(record.timestamp).toLocaleString()}</span></div>
+    `;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    modal.querySelector('.modal__close').focus();
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  modalCloseAll.forEach(btn => btn.addEventListener('click', closeModal));
+  modalOverlay.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  });
+
+
+  /* ═══════════════════════════════════════════════════════════
+     EXPORT (CSV / JSON)
+     ═══════════════════════════════════════════════════════════ */
+  btnExportCSV.addEventListener('click', () => {
+    const data = getRegistrations();
+    if (data.length === 0) { showToast('No data to export', 'error'); return; }
+
+    const header = 'Name,Email,Roll Number,Semester,Course,Timestamp';
+    const rows = data.map(r => `"${r.name}","${r.email}","${r.roll}",${r.semester},"${r.course}","${r.timestamp}"`);
+    downloadFile(`${header}\n${rows.join('\n')}`, 'campusforge-enrollments.csv', 'text/csv');
+    showToast('CSV exported successfully', 'success');
+    auditLog('EXPORT ⟫ CSV download initiated', 'info');
+  });
+
+  btnExportJSON.addEventListener('click', () => {
+    const data = getRegistrations();
+    if (data.length === 0) { showToast('No data to export', 'error'); return; }
+
+    downloadFile(JSON.stringify(data, null, 2), 'campusforge-enrollments.json', 'application/json');
+    showToast('JSON exported successfully', 'success');
+    auditLog('EXPORT ⟫ JSON download initiated', 'info');
+  });
+
+  btnClearAll.addEventListener('click', () => {
+    if (confirm('⚠ This will permanently delete all enrollment records. Continue?')) {
+      localStorage.removeItem(STORAGE_KEY);
+      renderRecords();
+      showToast('All records cleared', 'info');
+      auditLog('PURGE ⟫ All enrollment records deleted', 'warn');
+    }
+  });
+
+  function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════
+     NAVIGATION TABS
+     ═══════════════════════════════════════════════════════════ */
+  navTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      navTabs.forEach(t => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+
+      const target = tab.dataset.target;
+
+      if (target === 'all-sections') {
+        allSections.forEach(s => { s.style.display = ''; });
+      } else {
+        allSections.forEach(s => {
+          s.style.display = s.id === target ? '' : 'none';
+        });
       }
     });
-
-    cardActions.appendChild(viewBtn);
-    cardActions.appendChild(removeBtn);
-
-    card.appendChild(cardHeader);
-    card.appendChild(cardInfo);
-    card.appendChild(cardActions);
-
-    recordsListGrid.appendChild(card);
-  });
-}
-
-function updateMetrics() {
-  const records = getRegistrations();
-  if (metricTotal) metricTotal.textContent = records.length;
-  if (navRegCount) navRegCount.textContent = records.length;
-}
-
-/**
- * Exports stored registrations to CSV format.
- */
-function exportToCSV() {
-  const records = getRegistrations();
-  if (records.length === 0) {
-    showToast('No records available to export.', 'error');
-    return;
-  }
-
-  const headers = ['ID', 'Full Name', 'Roll Number', 'Email', 'Semester', 'Elective Course', 'Registration Date'];
-  const rows = records.map(r => [
-    `"${r.id}"`,
-    `"${r.fullName.replace(/"/g, '""')}"`,
-    `"${r.rollNumber}"`,
-    `"${r.studentEmail}"`,
-    `"${r.semester}"`,
-    `"${r.electiveCourse}"`,
-    `"${new Date(r.submittedAt).toLocaleString()}"`
-  ]);
-
-  const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `niit_bscs_registrations_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  showToast('Registrations exported to CSV file!', 'success');
-  logAudit('Exported registry database to CSV file', 'info');
-}
-
-/**
- * Exports stored registrations to JSON format.
- */
-function exportToJSON() {
-  const records = getRegistrations();
-  if (records.length === 0) {
-    showToast('No records available to export.', 'error');
-    return;
-  }
-
-  const jsonString = JSON.stringify(records, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `niit_bscs_registrations_${Date.now()}.json`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  showToast('Registrations exported to JSON format!', 'success');
-  logAudit('Exported registry database to JSON format', 'info');
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// MODAL & NAVIGATION ENGINE
-// ═══════════════════════════════════════════════════════════════
-
-function openModal(item) {
-  if (!detailsModal || !modalBody) return;
-
-  modalBody.textContent = '';
-
-  const details = [
-    { label: 'Student Name', value: item.fullName },
-    { label: 'Roll Number', value: item.rollNumber },
-    { label: 'Student Email', value: item.studentEmail },
-    { label: 'Semester', value: `Semester ${item.semester}` },
-    { label: 'Elective Course', value: item.electiveCourse },
-    { label: 'Security Policy', value: 'Verified (Regex Gate Passed 100%)' },
-    { label: 'Submitted Timestamp', value: new Date(item.submittedAt).toLocaleString() }
-  ];
-
-  details.forEach(d => {
-    const row = document.createElement('div');
-    row.className = 'modal__detail-row';
-
-    const labelSpan = document.createElement('span');
-    labelSpan.className = 'modal__detail-label';
-    labelSpan.textContent = d.label;
-
-    const valSpan = document.createElement('span');
-    valSpan.className = 'modal__detail-value';
-    valSpan.textContent = d.value;
-
-    row.appendChild(labelSpan);
-    row.appendChild(valSpan);
-    modalBody.appendChild(row);
   });
 
-  detailsModal.classList.add('is-open');
-  detailsModal.setAttribute('aria-hidden', 'false');
-  logAudit(`Opened detail inspection modal for ${item.rollNumber}`, 'info');
-}
 
-function closeModal() {
-  if (!detailsModal) return;
-  detailsModal.classList.remove('is-open');
-  detailsModal.setAttribute('aria-hidden', 'true');
-}
+  /* ═══════════════════════════════════════════════════════════
+     THEME TOGGLE
+     ═══════════════════════════════════════════════════════════ */
+  const savedTheme = localStorage.getItem('campusforge_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeButton(savedTheme);
 
-modalCloseBtns.forEach(btn => btn.addEventListener('click', closeModal));
-if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && detailsModal && detailsModal.classList.contains('is-open')) {
-    closeModal();
-  }
-});
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('campusforge_theme', next);
+    updateThemeButton(next);
+    auditLog(`THEME ⟫ Switched to ${next.toUpperCase()} mode`, 'info');
+  });
 
-
-// ═══════════════════════════════════════════════════════════════
-// TAB MODULE SWITCHER & THEME TOGGLE
-// ═══════════════════════════════════════════════════════════════
-
-navTabs.forEach(tab => {
-  tab.addEventListener('click', function () {
-    const target = tab.getAttribute('data-target');
-
-    navTabs.forEach(t => t.classList.remove('is-active'));
-    tab.classList.add('is-active');
-
-    const sections = document.querySelectorAll('.form-section');
-    if (target === 'all-sections') {
-      sections.forEach(s => s.style.display = 'block');
+  function updateThemeButton(theme) {
+    const icon = themeToggle.querySelector('.theme-toggle-btn__icon');
+    const text = themeToggle.querySelector('.theme-toggle-btn__text');
+    if (theme === 'dark') {
+      icon.textContent = '🌙';
+      text.textContent = 'Dark';
     } else {
-      sections.forEach(s => {
-        if (s.id === target) s.style.display = 'block';
-        else s.style.display = 'none';
-      });
-    }
-  });
-});
-
-if (themeToggleBtn) {
-  themeToggleBtn.addEventListener('click', function () {
-    const htmlEl = document.documentElement;
-    const currentTheme = htmlEl.getAttribute('data-theme') || 'dark';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    htmlEl.setAttribute('data-theme', newTheme);
-    localStorage.setItem(THEME_KEY, newTheme);
-
-    const icon = themeToggleBtn.querySelector('.theme-toggle-btn__icon');
-    const text = themeToggleBtn.querySelector('.theme-toggle-btn__text');
-
-    if (icon) icon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
-    if (text) text.textContent = newTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
-
-    showToast(`Switched to ${newTheme.toUpperCase()} theme`, 'info');
-  });
-}
-
-// Restore saved theme on load
-(function initTheme() {
-  const savedTheme = localStorage.getItem(THEME_KEY);
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    if (themeToggleBtn) {
-      const icon = themeToggleBtn.querySelector('.theme-toggle-btn__icon');
-      const text = themeToggleBtn.querySelector('.theme-toggle-btn__text');
-      if (icon) icon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
-      if (text) text.textContent = savedTheme === 'dark' ? 'Dark Mode' : 'Light Mode';
+      icon.textContent = '☀️';
+      text.textContent = 'Light';
     }
   }
+
+
+  /* ═══════════════════════════════════════════════════════════
+     PASSWORD VISIBILITY TOGGLE
+     ═══════════════════════════════════════════════════════════ */
+  $$('.js-toggle-password').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.target;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.querySelector('.form__eye-icon').textContent = isPassword ? '🔒' : '👁';
+      btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+    });
+  });
+
+
+  /* ═══════════════════════════════════════════════════════════
+     AUDIT LOG
+     ═══════════════════════════════════════════════════════════ */
+  function auditLog(message, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const line = document.createElement('span');
+    line.className = `audit-line audit-line--${type}`;
+    line.textContent = `[${timestamp}] ${message}`;
+    auditContainer.appendChild(line);
+    auditContainer.scrollTop = auditContainer.scrollHeight;
+  }
+
+  auditClear.addEventListener('click', () => {
+    auditContainer.innerHTML = '';
+    auditLog('Audit log cleared', 'info');
+  });
+
+
+  /* ═══════════════════════════════════════════════════════════
+     TOAST NOTIFICATIONS
+     ═══════════════════════════════════════════════════════════ */
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast--${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)';
+      toast.style.transition = 'all 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════
+     INITIALIZATION
+     ═══════════════════════════════════════════════════════════ */
+  renderRecords();
+  auditLog('CampusForge Portal initialized — ARIA gates armed', 'info');
+  auditLog(`Theme: ${savedTheme.toUpperCase()} | Registrations: ${getRegistrations().length}`, 'info');
+
 })();
-
-// Keyboard shortcut: '/' to focus search input
-document.addEventListener('keydown', e => {
-  if (e.key === '/' && document.activeElement !== recordsSearchInput && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-    e.preventDefault();
-    if (recordsSearchInput) recordsSearchInput.focus();
-  }
-});
-
-
-// ═══════════════════════════════════════════════════════════════
-// EXPORT & CLEAR ACTION LISTENERS
-// ═══════════════════════════════════════════════════════════════
-
-if (btnExportCSV) btnExportCSV.addEventListener('click', exportToCSV);
-if (btnExportJSON) btnExportJSON.addEventListener('click', exportToJSON);
-
-if (btnClearAll) {
-  btnClearAll.addEventListener('click', function () {
-    if (confirm('Are you sure you want to reset and clear all registered courses?')) {
-      saveRegistrations([]);
-      renderRegisteredCourses();
-      showToast('Registry cleared successfully.', 'info');
-      logAudit('Registry wiped by administrator', 'warn');
-    }
-  });
-}
-
-if (btnAuditClear && auditLogContainer) {
-  btnAuditClear.addEventListener('click', function () {
-    auditLogContainer.textContent = '';
-    logAudit('Audit log cleared by user', 'info');
-  });
-}
-
-if (recordsFilterCourse) recordsFilterCourse.addEventListener('change', renderRegisteredCourses);
-if (recordsSearchInput) recordsSearchInput.addEventListener('input', renderRegisteredCourses);
-
-// Initial Telemetry & Rendering
-updateMetrics();
-renderRegisteredCourses();
-logAudit('NIIT Academic Portal Engine initialized', 'info');
-logAudit('Validation Security Gate loaded (Strict Regex Tier 1)', 'success');

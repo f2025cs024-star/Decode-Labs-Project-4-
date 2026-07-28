@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIIT AMS – Academic Management System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Auth View -->
+        <section id="auth-view" class="view active">
+            <div class="auth-container">
+                <div class="auth-box glass-panel">
+                    <div class="auth-header">
+                        <i class="fa-solid fa-building-columns logo-icon"></i>
+                        <h1>NIIT – Academic Management System</h1>
+                        <p>Welcome! Please login to access your portal.</p>
+                    </div>
+                    <form id="auth-form">
+                        <div class="input-group">
+                            <label for="student-id">Roll Number / Student ID</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="student-id" required placeholder="Enter your ID">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="password">Password</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="password" required placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div id="login-error" class="error-message"></div>
+                        <button type="submit" class="primary-btn w-100">Login</button>
+                    </form>
+                    <div class="auth-footer">
+                        <a href="#" id="forgot-password">Forgot Password?</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Dashboard Layout -->
+        <section id="dashboard-view" class="view">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="nav-brand">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <h2>NIIT AMS</h2>
+                </div>
+                <div class="nav-user">
+                    <span id="nav-student-name">Student Name</span>
+                    <button id="logout-btn" class="icon-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            </nav>
+            <div class="dashboard-container">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li><a href="#" class="nav-item active" data-target="dashboard-home"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+                        <li><a href="#" class="nav-item" data-target="marks-management"><i class="fa-solid fa-star"></i> Marks Management</a></li>
+                        <li><a href="#" class="nav-item" data-target="attendance-management"><i class="fa-solid fa-calendar-check"></i> Attendance Management</a></li>
+                        <li><a href="#" class="nav-item" data-target="profile-section"><i class="fa-solid fa-user-gear"></i> Profile</a></li>
+                    </ul>
+                </aside>
+                <!-- Main Content -->
+                <main class="main-content">
+                    <!-- Dashboard Home Section -->
+                    <section id="dashboard-home" class="content-section active">
+                        <h2 class="section-title">Dashboard Overview</h2>
+                        <div class="summary-cards">
+                            <div class="card summary-card">
+                                <div class="card-icon"><i class="fa-solid fa-book"></i></div>
+                                <div class="card-info">
+                                    <h3>Total Subjects</h3>
+                                    <p id="total-subjects">0</p>
+                                </div>
+                            </div>
+                            <div class="card summary-card">
+                                <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                                <div class="card-info">
+                                    <h3>Overall Attendance</h3>
+                                    <p id="overall-attendance">0%</p>
+                                </div>
+                            </div>
+                            <div class="card summary-card">
+                                <div class="card-icon"><i class="fa-solid fa-award"></i></div>
+                                <div class="card-info">
+                                    <h3>GPA / CGPA</h3>
+                                    <p id="overall-cgpa">0.00</p>
+                                </div>
+                            </div>
+                            <div class="card summary-card">
+                                <div class="card-icon"><i class="fa-solid fa-clock"></i></div>
+                                <div class="card-info">
+                                    <h3>Upcoming Exams</h3>
+                                    <p>2</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Marks Management Section -->
+                    <section id="marks-management" class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Marks Management</h2>
+                            <div class="filter-group">
+                                <label for="semester-select">Semester:</label>
+                                <select id="semester-select" class="custom-select">
+                                    <option value="all">All Semesters</option>
+                                    <option value="1">Semester 1</option>
+                                    <option value="2">Semester 2</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="table-responsive">
+                                <table class="data-table" id="marks-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course Code</th>
+                                            <th>Course Name</th>
+                                            <th>Quizzes</th>
+                                            <th>Assignments</th>
+                                            <th>Mid Term</th>
+                                            <th>Final</th>
+                                            <th>Total Marks</th>
+                                            <th>Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="cgpa-summary">
+                                <h3>Calculated CGPA: <span id="display-cgpa">0.00</span></h3>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Attendance Management Section -->
+                    <section id="attendance-management" class="content-section">
+                        <h2 class="section-title">Attendance Management</h2>
+                        
+                        <div id="attendance-warning" class="alert warning hidden">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Warning: You have one or more subjects with attendance below 75%.</span>
+                        </div>
+                        <div class="attendance-layout">
+                            <div class="card attendance-chart-card">
+                                <h3>Overall Attendance</h3>
+                                <div class="circular-progress">
+                                    <svg viewBox="0 0 100 100">
+                                        <circle class="bg" cx="50" cy="50" r="45"></circle>
+                                        <circle class="progress" cx="50" cy="50" r="45" id="attendance-circle"></circle>
+                                    </svg>
+                                    <div class="progress-value" id="attendance-circle-text">0%</div>
+                                </div>
+                            </div>
+                            <div class="card attendance-table-card">
+                                <h3>Subject-wise Attendance</h3>
+                                <div class="table-responsive">
+                                    <table class="data-table" id="attendance-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Course Code</th>
+                                                <th>Course Name</th>
+                                                <th>Total Classes</th>
+                                                <th>Attended</th>
+                                                <th>Missed</th>
+                                                <th>Attendance %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Populated via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Profile Section -->
+                    <section id="profile-section" class="content-section">
+                        <h2 class="section-title">Student Profile</h2>
+                        <div class="card profile-card">
+                            <div class="profile-header">
+                                <div class="profile-avatar">
+                                    <i class="fa-solid fa-user-graduate"></i>
+                                </div>
+                                <div class="profile-info">
+                                    <h3 id="profile-name">John Doe</h3>
+                                    <p>B.Sc. Computer Science</p>
+                                    <p>Roll Number: <span id="profile-id">CS-2023-001</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </section>
+    </div>
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="NIIT Course Registration & Feedback Portal — Enterprise BSCS Elective Enrollment System with real-time validation, analytics, CSV export, and ARIA compliance.">
-  <title>NIIT Course Registration &amp; Feedback Portal | DecodeLabs</title>
+  <meta name="description" content="CampusForge — Universal Course Registration & Feedback Portal for BSCS students. Enterprise-grade form validation, real-time analytics, and WCAG 2.1 AA compliance.">
+  <title>CampusForge — Course Registration &amp; Feedback Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -12,89 +12,94 @@
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       HEADER — Institutional Banner, System Status & Metrics
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══ ANIMATED BACKGROUND PARTICLES (Pure CSS) ═══ -->
+  <div class="bg-particles" aria-hidden="true">
+    <div class="bg-particles__orb bg-particles__orb--1"></div>
+    <div class="bg-particles__orb bg-particles__orb--2"></div>
+    <div class="bg-particles__orb bg-particles__orb--3"></div>
+    <div class="bg-particles__orb bg-particles__orb--4"></div>
+    <div class="bg-particles__orb bg-particles__orb--5"></div>
+  </div>
+
+  <!-- ═══ HEADER ═══ -->
   <header class="site-header">
     <div class="site-header__container">
       <div class="site-header__top-bar">
         <div class="site-header__status-badge">
           <span class="status-dot" aria-hidden="true"></span>
-          <span>NIIT Academic Portal &bull; Fall 2025 Live</span>
+          <span>Academic Portal &bull; Enrollment Open</span>
         </div>
         <div class="site-header__theme-toggle">
           <button type="button" class="theme-toggle-btn js-theme-toggle" aria-label="Toggle dark/light theme">
             <span class="theme-toggle-btn__icon" aria-hidden="true">🌙</span>
-            <span class="theme-toggle-btn__text">Dark Mode</span>
+            <span class="theme-toggle-btn__text">Dark</span>
           </button>
         </div>
       </div>
 
       <div class="site-header__brand">
-        <span class="site-header__logo" aria-hidden="true">⎔</span>
-        <h1 class="site-header__title">NIIT Course Registration &amp; Feedback</h1>
+        <div class="site-header__logo-mark" aria-hidden="true">
+          <span class="logo-mark__icon">◈</span>
+        </div>
+        <div class="site-header__titles">
+          <h1 class="site-header__title">Campus<span class="site-header__title-accent">Forge</span></h1>
+          <p class="site-header__tagline">Universal Course Registration &amp; Feedback Portal</p>
+        </div>
       </div>
-      <p class="site-header__tagline">BSCS Elective Enrollment, Query Management &amp; Analytics Portal</p>
 
       <!-- KPI Metrics Bar -->
-      <div class="metrics-bar" role="region" aria-label="Portal Metrics Summary">
+      <div class="metrics-bar" role="region" aria-label="Portal Statistics">
         <div class="metrics-bar__item">
           <span class="metrics-bar__value js-metric-total">0</span>
-          <span class="metrics-bar__label">Total Enrollments</span>
+          <span class="metrics-bar__label">Enrolled</span>
         </div>
         <div class="metrics-bar__divider" aria-hidden="true"></div>
         <div class="metrics-bar__item">
           <span class="metrics-bar__value">6</span>
-          <span class="metrics-bar__label">Elective Tracks</span>
+          <span class="metrics-bar__label">Electives</span>
         </div>
         <div class="metrics-bar__divider" aria-hidden="true"></div>
         <div class="metrics-bar__item">
-          <span class="metrics-bar__value">100%</span>
-          <span class="metrics-bar__label">Client Security</span>
+          <span class="metrics-bar__value">AES-256</span>
+          <span class="metrics-bar__label">Security</span>
         </div>
         <div class="metrics-bar__divider" aria-hidden="true"></div>
         <div class="metrics-bar__item">
-          <span class="metrics-bar__value">WCAG AA</span>
-          <span class="metrics-bar__label">Accessibility</span>
+          <span class="metrics-bar__value">AA+</span>
+          <span class="metrics-bar__label">WCAG</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       NAVIGATION BAR — Quick Section Switcher
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══ NAVIGATION ═══ -->
   <nav class="nav-bar" aria-label="Portal section navigation">
     <div class="nav-bar__container">
       <button type="button" class="nav-bar__tab is-active js-nav-tab" data-target="all-sections">
-        <span aria-hidden="true">🌐</span> All Modules
+        <span aria-hidden="true">⬡</span> All Modules
       </button>
       <button type="button" class="nav-bar__tab js-nav-tab" data-target="registration-section">
-        <span aria-hidden="true">📋</span> Registration
+        <span aria-hidden="true">◎</span> Registration
       </button>
       <button type="button" class="nav-bar__tab js-nav-tab" data-target="feedback-section">
-        <span aria-hidden="true">💬</span> Feedback
+        <span aria-hidden="true">◉</span> Feedback
       </button>
       <button type="button" class="nav-bar__tab js-nav-tab" data-target="records-section">
-        <span aria-hidden="true">🎓</span> Registry (<span class="js-nav-reg-count">0</span>)
+        <span aria-hidden="true">◈</span> Registry <span class="nav-bar__count js-nav-reg-count">0</span>
       </button>
       <button type="button" class="nav-bar__tab js-nav-tab" data-target="audit-section">
-        <span aria-hidden="true">🛡️</span> Security Log
+        <span aria-hidden="true">◇</span> Audit Log
       </button>
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       MAIN — Section Containers
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══ MAIN ═══ -->
   <main class="main-content" id="main-content">
 
-    <!-- ─────────────────────────────────────────────────────────
-         SECTION 1 — Course Registration Form (INPUT phase)
-         ───────────────────────────────────────────────────────── -->
+    <!-- ── SECTION 1: Course Registration ── -->
     <section class="form-section form-section--registration" id="registration-section" aria-labelledby="registration-heading">
       <div class="form-section__header">
-        <span class="form-section__icon" aria-hidden="true">📋</span>
+        <div class="section-badge" aria-hidden="true">01</div>
         <h2 id="registration-heading" class="form-section__title">Course Registration</h2>
         <p class="form-section__subtitle">Enroll in your preferred BSCS elective for the upcoming semester.</p>
       </div>
@@ -103,77 +108,30 @@
 
         <!-- Full Name -->
         <div class="form__field">
-          <label class="form__label" for="reg-name">
-            Full Name
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <input
-            class="form__input js-reg-name"
-            type="text"
-            id="reg-name"
-            name="fullName"
-            required
-            autocomplete="name"
-            placeholder="e.g. Muhammad Talha"
-            aria-describedby="reg-name-error"
-          >
+          <label class="form__label" for="reg-name">Full Name <span class="form__required" aria-hidden="true">*</span></label>
+          <input class="form__input js-reg-name" type="text" id="reg-name" name="fullName" required autocomplete="name" placeholder="e.g. Ahmed Khan" aria-describedby="reg-name-error">
           <span class="form__error" id="reg-name-error" role="alert"></span>
         </div>
 
         <!-- Student Email -->
         <div class="form__field">
-          <label class="form__label" for="reg-email">
-            Student Email
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <input
-            class="form__input js-reg-email"
-            type="email"
-            id="reg-email"
-            name="studentEmail"
-            required
-            autocomplete="email"
-            placeholder="e.g. student@niit.edu.pk"
-            aria-describedby="reg-email-error"
-          >
+          <label class="form__label" for="reg-email">Student Email <span class="form__required" aria-hidden="true">*</span></label>
+          <input class="form__input js-reg-email" type="email" id="reg-email" name="studentEmail" required autocomplete="email" placeholder="e.g. student@university.edu" aria-describedby="reg-email-error">
           <span class="form__error" id="reg-email-error" role="alert"></span>
         </div>
 
         <!-- Roll Number -->
         <div class="form__field">
-          <label class="form__label" for="reg-roll">
-            Roll Number
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <input
-            class="form__input js-reg-roll"
-            type="text"
-            id="reg-roll"
-            name="rollNumber"
-            required
-            pattern="^F20[0-9]{2}-CS-[0-9]{3}$"
-            placeholder="Format: F2025-CS-001"
-            aria-describedby="reg-roll-hint reg-roll-error"
-          >
-          <span class="form__hint" id="reg-roll-hint">
-            Expected format: F20XX-CS-XXX (e.g. F2025-CS-042)
-          </span>
+          <label class="form__label" for="reg-roll">Roll Number <span class="form__required" aria-hidden="true">*</span></label>
+          <input class="form__input js-reg-roll" type="text" id="reg-roll" name="rollNumber" required pattern="^F20[0-9]{2}-CS-[0-9]{3}$" placeholder="Format: F2025-CS-001" aria-describedby="reg-roll-hint reg-roll-error">
+          <span class="form__hint" id="reg-roll-hint">Expected format: F20XX-CS-XXX (e.g. F2025-CS-042)</span>
           <span class="form__error" id="reg-roll-error" role="alert"></span>
         </div>
 
         <!-- Semester -->
         <div class="form__field">
-          <label class="form__label" for="reg-semester">
-            Semester
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <select
-            class="form__input form__input--select js-reg-semester"
-            id="reg-semester"
-            name="semester"
-            required
-            aria-describedby="reg-semester-error"
-          >
+          <label class="form__label" for="reg-semester">Semester <span class="form__required" aria-hidden="true">*</span></label>
+          <select class="form__input form__input--select js-reg-semester" id="reg-semester" name="semester" required aria-describedby="reg-semester-error">
             <option value="" disabled selected>— Select your semester —</option>
             <option value="1">Semester 1</option>
             <option value="2">Semester 2</option>
@@ -189,17 +147,8 @@
 
         <!-- Elective Course -->
         <div class="form__field">
-          <label class="form__label" for="reg-course">
-            Elective Course
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <select
-            class="form__input form__input--select js-reg-course"
-            id="reg-course"
-            name="electiveCourse"
-            required
-            aria-describedby="reg-course-error"
-          >
+          <label class="form__label" for="reg-course">Elective Course <span class="form__required" aria-hidden="true">*</span></label>
+          <select class="form__input form__input--select js-reg-course" id="reg-course" name="electiveCourse" required aria-describedby="reg-course-error">
             <option value="" disabled selected>— Choose an elective —</option>
             <option value="Artificial Intelligence">Artificial Intelligence</option>
             <option value="Web Engineering">Web Engineering</option>
@@ -213,302 +162,146 @@
 
         <!-- Password -->
         <div class="form__field">
-          <label class="form__label" for="reg-password">
-            Portal Password
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
+          <label class="form__label" for="reg-password">Portal Password <span class="form__required" aria-hidden="true">*</span></label>
           <div class="form__input-wrapper">
-            <input
-              class="form__input js-reg-password"
-              type="password"
-              id="reg-password"
-              name="password"
-              required
-              minlength="8"
-              autocomplete="new-password"
-              placeholder="Create a strong password"
-              aria-describedby="reg-password-hint reg-password-error"
-            >
-            <button
-              type="button"
-              class="form__toggle-password js-toggle-password"
-              aria-label="Toggle password visibility"
-              data-target="reg-password"
-            >
+            <input class="form__input js-reg-password" type="password" id="reg-password" name="password" required minlength="8" autocomplete="new-password" placeholder="Create a strong password" aria-describedby="reg-password-hint reg-password-error">
+            <button type="button" class="form__toggle-password js-toggle-password" aria-label="Toggle password visibility" data-target="reg-password">
               <span class="form__eye-icon" aria-hidden="true">👁</span>
             </button>
           </div>
-
-          <!-- Password Strength Progress Meter -->
           <div class="password-strength">
-            <div class="password-strength__bar-bg">
-              <div class="password-strength__bar js-password-bar"></div>
-            </div>
-            <span class="password-strength__label js-password-strength-text">Entropy Rating: Unchecked</span>
+            <div class="password-strength__bar-bg"><div class="password-strength__bar js-password-bar"></div></div>
+            <span class="password-strength__label js-password-strength-text">Strength: Not evaluated</span>
           </div>
-
-          <!-- Password strength checklist -->
           <ul class="form__password-checklist" id="reg-password-hint">
-            <li class="form__check-item js-check-upper" data-rule="upper">
-              <span class="form__check-icon" aria-hidden="true"></span>
-              At least one uppercase letter (A–Z)
-            </li>
-            <li class="form__check-item js-check-lower" data-rule="lower">
-              <span class="form__check-icon" aria-hidden="true"></span>
-              At least one lowercase letter (a–z)
-            </li>
-            <li class="form__check-item js-check-digit" data-rule="digit">
-              <span class="form__check-icon" aria-hidden="true"></span>
-              At least one digit (0–9)
-            </li>
-            <li class="form__check-item js-check-special" data-rule="special">
-              <span class="form__check-icon" aria-hidden="true"></span>
-              At least one special character (#?!@$%^&amp;*-)
-            </li>
-            <li class="form__check-item js-check-length" data-rule="length">
-              <span class="form__check-icon" aria-hidden="true"></span>
-              Minimum 8 characters total
-            </li>
+            <li class="form__check-item js-check-upper"><span class="form__check-icon" aria-hidden="true"></span> Uppercase letter (A–Z)</li>
+            <li class="form__check-item js-check-lower"><span class="form__check-icon" aria-hidden="true"></span> Lowercase letter (a–z)</li>
+            <li class="form__check-item js-check-digit"><span class="form__check-icon" aria-hidden="true"></span> Digit (0–9)</li>
+            <li class="form__check-item js-check-special"><span class="form__check-icon" aria-hidden="true"></span> Special char (#?!@$%^&amp;*-)</li>
+            <li class="form__check-item js-check-length"><span class="form__check-icon" aria-hidden="true"></span> Minimum 8 characters</li>
           </ul>
           <span class="form__error" id="reg-password-error" role="alert"></span>
         </div>
 
         <!-- Confirm Password -->
         <div class="form__field">
-          <label class="form__label" for="reg-confirm-password">
-            Confirm Password
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
+          <label class="form__label" for="reg-confirm-password">Confirm Password <span class="form__required" aria-hidden="true">*</span></label>
           <div class="form__input-wrapper">
-            <input
-              class="form__input js-reg-confirm-password"
-              type="password"
-              id="reg-confirm-password"
-              name="confirmPassword"
-              required
-              autocomplete="new-password"
-              placeholder="Re-enter your password"
-              aria-describedby="reg-confirm-password-error"
-            >
-            <button
-              type="button"
-              class="form__toggle-password js-toggle-password"
-              aria-label="Toggle confirm password visibility"
-              data-target="reg-confirm-password"
-            >
+            <input class="form__input js-reg-confirm-password" type="password" id="reg-confirm-password" name="confirmPassword" required autocomplete="new-password" placeholder="Re-enter your password" aria-describedby="reg-confirm-password-error">
+            <button type="button" class="form__toggle-password js-toggle-password" aria-label="Toggle confirm password visibility" data-target="reg-confirm-password">
               <span class="form__eye-icon" aria-hidden="true">👁</span>
             </button>
           </div>
           <span class="form__error" id="reg-confirm-password-error" role="alert"></span>
         </div>
 
-        <!-- Submit Button -->
         <div class="form__actions">
           <button class="form__submit" type="submit">
             <span class="form__submit-text">Register Now</span>
             <span class="form__submit-icon" aria-hidden="true">→</span>
           </button>
         </div>
-
-        <!-- Submission status — aria-live region, always in DOM -->
         <div class="form__status js-registration-status" aria-live="polite"></div>
-
       </form>
     </section>
 
-    <!-- ─────────────────────────────────────────────────────────
-         SECTION 2 — Feedback & Queries Form (INPUT phase)
-         ───────────────────────────────────────────────────────── -->
+    <!-- ── SECTION 2: Feedback & Queries ── -->
     <section class="form-section form-section--feedback" id="feedback-section" aria-labelledby="feedback-heading">
       <div class="form-section__header">
-        <span class="form-section__icon" aria-hidden="true">💬</span>
+        <div class="section-badge section-badge--cyan" aria-hidden="true">02</div>
         <h2 id="feedback-heading" class="form-section__title">Feedback &amp; Queries</h2>
         <p class="form-section__subtitle">Have a question or suggestion? We'd love to hear from you.</p>
       </div>
 
       <form class="form js-feedback-form" novalidate>
-
-        <!-- Name -->
         <div class="form__field">
-          <label class="form__label" for="fb-name">
-            Name
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <input
-            class="form__input js-fb-name"
-            type="text"
-            id="fb-name"
-            name="name"
-            required
-            autocomplete="name"
-            placeholder="Your full name"
-            aria-describedby="fb-name-error"
-          >
+          <label class="form__label" for="fb-name">Name <span class="form__required" aria-hidden="true">*</span></label>
+          <input class="form__input js-fb-name" type="text" id="fb-name" name="name" required autocomplete="name" placeholder="Your full name" aria-describedby="fb-name-error">
           <span class="form__error" id="fb-name-error" role="alert"></span>
         </div>
-
-        <!-- Email -->
         <div class="form__field">
-          <label class="form__label" for="fb-email">
-            Email
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <input
-            class="form__input js-fb-email"
-            type="email"
-            id="fb-email"
-            name="email"
-            required
-            autocomplete="email"
-            placeholder="your.email@example.com"
-            aria-describedby="fb-email-error"
-          >
+          <label class="form__label" for="fb-email">Email <span class="form__required" aria-hidden="true">*</span></label>
+          <input class="form__input js-fb-email" type="email" id="fb-email" name="email" required autocomplete="email" placeholder="your.email@example.com" aria-describedby="fb-email-error">
           <span class="form__error" id="fb-email-error" role="alert"></span>
         </div>
-
-        <!-- Subject -->
         <div class="form__field">
-          <label class="form__label" for="fb-subject">
-            Subject
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <input
-            class="form__input js-fb-subject"
-            type="text"
-            id="fb-subject"
-            name="subject"
-            required
-            placeholder="e.g. Question about AI elective prerequisites"
-            aria-describedby="fb-subject-error"
-          >
+          <label class="form__label" for="fb-subject">Subject <span class="form__required" aria-hidden="true">*</span></label>
+          <input class="form__input js-fb-subject" type="text" id="fb-subject" name="subject" required placeholder="e.g. Question about AI elective" aria-describedby="fb-subject-error">
           <span class="form__error" id="fb-subject-error" role="alert"></span>
         </div>
-
-        <!-- Message -->
         <div class="form__field">
-          <label class="form__label" for="fb-message">
-            Message
-            <span class="form__required" aria-hidden="true">*</span>
-          </label>
-          <textarea
-            class="form__input form__input--textarea js-fb-message"
-            id="fb-message"
-            name="message"
-            required
-            rows="5"
-            minlength="20"
-            placeholder="Write your message here (minimum 20 characters)..."
-            aria-describedby="fb-message-hint fb-message-error"
-          ></textarea>
-          <span class="form__hint" id="fb-message-hint">
-            Minimum 20 characters required.
-            <span class="js-fb-char-count">0</span> / 20
-          </span>
+          <label class="form__label" for="fb-message">Message <span class="form__required" aria-hidden="true">*</span></label>
+          <textarea class="form__input form__input--textarea js-fb-message" id="fb-message" name="message" required rows="5" minlength="20" placeholder="Write your message here (minimum 20 characters)..." aria-describedby="fb-message-hint fb-message-error"></textarea>
+          <span class="form__hint" id="fb-message-hint">Min. 20 characters &middot; <span class="js-fb-char-count">0</span>/20</span>
           <span class="form__error" id="fb-message-error" role="alert"></span>
         </div>
-
-        <!-- Submit Button -->
         <div class="form__actions">
           <button class="form__submit form__submit--feedback" type="submit">
             <span class="form__submit-text">Send Feedback</span>
             <span class="form__submit-icon" aria-hidden="true">✉</span>
           </button>
         </div>
-
-        <!-- Submission status — aria-live region, always in DOM -->
         <div class="form__status js-feedback-status" aria-live="polite"></div>
-
       </form>
     </section>
 
-    <!-- ─────────────────────────────────────────────────────────
-         SECTION 3 — Registered Elective Courses Registry & Analytics
-         ───────────────────────────────────────────────────────── -->
+    <!-- ── SECTION 3: Enrollment Registry ── -->
     <section class="form-section form-section--records form-section--full-width" id="records-section" aria-labelledby="records-heading">
       <div class="form-section__header">
         <div class="form-section__header-flex">
           <div>
-            <span class="form-section__icon" aria-hidden="true">🎓</span>
-            <h2 id="records-heading" class="form-section__title">Registered Elective Courses Registry</h2>
-            <p class="form-section__subtitle">Real-time student enrollment database with export &amp; search functionality.</p>
+            <div class="section-badge section-badge--emerald" aria-hidden="true">03</div>
+            <h2 id="records-heading" class="form-section__title">Enrollment Registry</h2>
+            <p class="form-section__subtitle">Live student enrollment database with search, filter &amp; data export.</p>
           </div>
-          <!-- Executive Export Actions -->
           <div class="records__export-actions">
-            <button type="button" class="btn-export js-btn-export-csv" title="Export records to CSV file">
-              <span>📥 Export CSV</span>
-            </button>
-            <button type="button" class="btn-export js-btn-export-json" title="Export records to JSON format">
-              <span>📦 Export JSON</span>
-            </button>
-            <button type="button" class="btn-export btn-export--danger js-btn-clear-all" title="Clear all registrations">
-              <span>🗑️ Reset Registry</span>
-            </button>
+            <button type="button" class="btn-export js-btn-export-csv">📥 Export CSV</button>
+            <button type="button" class="btn-export js-btn-export-json">📦 Export JSON</button>
+            <button type="button" class="btn-export btn-export--danger js-btn-clear-all">🗑️ Reset</button>
           </div>
         </div>
       </div>
-
-      <!-- Controls: Search & Filter bar -->
       <div class="records__controls">
         <div class="records__control-group">
           <label class="records__label" for="records-filter">Filter Course:</label>
           <select class="form__input form__input--select records__select js-records-filter-course" id="records-filter">
-            <option value="ALL">All Elective Courses</option>
+            <option value="ALL">All Electives</option>
             <option value="Artificial Intelligence">Artificial Intelligence</option>
             <option value="Web Engineering">Web Engineering</option>
-            <option value="Mobile App Development">Mobile App Development</option>
+            <option value="Mobile App Development">Mobile App Dev</option>
             <option value="Cloud Computing">Cloud Computing</option>
             <option value="Cyber Security">Cyber Security</option>
             <option value="Data Science">Data Science</option>
           </select>
         </div>
-
         <div class="records__control-group">
-          <label class="records__label" for="records-search">Search Student (Press '/' to focus):</label>
-          <input
-            class="form__input records__search js-records-search"
-            type="text"
-            id="records-search"
-            placeholder="Search by Roll #, Name, or Email..."
-          >
+          <label class="records__label" for="records-search">Search (press '/'):</label>
+          <input class="form__input records__search js-records-search" type="text" id="records-search" placeholder="Search by Roll #, Name, or Email...">
         </div>
-
-        <div class="records__badge-count js-records-count" aria-live="polite">
-          Showing 0 enrollments
-        </div>
+        <div class="records__badge-count js-records-count" aria-live="polite">0 results</div>
       </div>
-
-      <!-- Live Cards Grid / Container -->
-      <div class="records__grid js-records-list" role="region" aria-live="polite" aria-label="Registered course list">
-        <!-- Rendered dynamically by JavaScript -->
-      </div>
+      <div class="records__grid js-records-list" role="region" aria-live="polite" aria-label="Registered courses"></div>
     </section>
 
-    <!-- ─────────────────────────────────────────────────────────
-         SECTION 4 — Live Security & Regex Audit Console
-         ───────────────────────────────────────────────────────── -->
+    <!-- ── SECTION 4: Security Audit Log ── -->
     <section class="form-section form-section--audit form-section--full-width" id="audit-section" aria-labelledby="audit-heading">
       <div class="form-section__header">
-        <span class="form-section__icon" aria-hidden="true">🛡️</span>
-        <h2 id="audit-heading" class="form-section__title">Client Security &amp; Validation Audit Log</h2>
-        <p class="form-section__subtitle">Live telemetry inspects client-side regex gates, IPO processing, and ARIA events.</p>
+        <div class="section-badge section-badge--amber" aria-hidden="true">04</div>
+        <h2 id="audit-heading" class="form-section__title">Validation Audit Log</h2>
+        <p class="form-section__subtitle">Client-side regex gates, IPO pipeline telemetry &amp; ARIA event stream.</p>
       </div>
-
       <div class="audit-console">
         <div class="audit-console__header">
-          <span class="audit-console__tag">● LIVE TELEMETRY LOG</span>
-          <button type="button" class="audit-console__clear js-audit-clear">Clear Terminal Log</button>
+          <span class="audit-console__tag">● LIVE TELEMETRY</span>
+          <button type="button" class="audit-console__clear js-audit-clear">Clear</button>
         </div>
-        <div class="audit-console__body js-audit-log-container" role="log" aria-live="polite">
-          <!-- Log entries injected dynamically by JS -->
-        </div>
+        <div class="audit-console__body js-audit-log-container" role="log" aria-live="polite"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       MODAL — Course Registration Details Popup
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══ MODAL ═══ -->
   <div class="modal js-modal" id="details-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title">
     <div class="modal__overlay js-modal-overlay"></div>
     <div class="modal__content">
@@ -516,37 +309,29 @@
         <h3 id="modal-title" class="modal__title">Enrollment Details</h3>
         <button type="button" class="modal__close js-modal-close" aria-label="Close modal">✕</button>
       </div>
-      <div class="modal__body js-modal-body">
-        <!-- Dynamic content injected by JS -->
-      </div>
+      <div class="modal__body js-modal-body"></div>
       <div class="modal__footer">
-        <button type="button" class="form__submit form__submit--modal-close js-modal-close">Close Details</button>
+        <button type="button" class="form__submit form__submit--modal-close js-modal-close">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       TOAST CONTAINER — Dynamic Notifications
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══ TOAST CONTAINER ═══ -->
   <div class="toast-container js-toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       FOOTER — Enterprise Quality Assurance Seal
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══ FOOTER ═══ -->
   <footer class="site-footer">
     <div class="site-footer__container">
       <div class="site-footer__badges">
-        <span class="footer-badge">WCAG 2.1 AA Compliant</span>
-        <span class="footer-badge">W3C HTML5 Validated</span>
-        <span class="footer-badge">Strict Regex Gate v2.4</span>
+        <span class="footer-badge">WCAG 2.1 AA</span>
+        <span class="footer-badge">W3C Validated</span>
+        <span class="footer-badge">Regex Gate v3</span>
+        <span class="footer-badge">IPO Architecture</span>
       </div>
-      <p class="site-footer__text">
-        &copy; 2025 DecodeLabs &mdash; Frontend Development Internship Track &middot; Project 4 System Architecture
-      </p>
+      <p class="site-footer__text">&copy; 2025 CampusForge &mdash; DecodeLabs Frontend Internship &middot; Project 4</p>
     </div>
   </footer>
 
-  <!-- External JS — all logic lives here, zero inline handlers -->
   <script src="script.js"></script>
 </body>
 </html>
